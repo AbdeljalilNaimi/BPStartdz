@@ -41,7 +41,7 @@ export function OpexTab({ bp }: { bp: ParsedBP }) {
               {ce.items.map(item => {
                 const hasValue = item.values.some(v => isNum(v) && v !== 0);
                 return (
-                  <TableRow key={item.label} className={hasValue ? '' : 'text-muted-foreground'}>
+                  <TableRow key={item.label} className={hasValue ? 'font-medium bg-accent/30' : 'text-muted-foreground'}>
                     <TableCell>{item.label}</TableCell>
                     {item.values.map((v, i) => <TableCell key={i} className="text-right tabular-nums">{dzd(v)}</TableCell>)}
                   </TableRow>
