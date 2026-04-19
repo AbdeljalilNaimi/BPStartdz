@@ -4,12 +4,12 @@ Upload an Excel business plan (`.xlsx`) and instantly explore it as an interacti
 
 ## Features
 
-- 📊 **10 themed tabs** — Overview, P&L, CAPEX, Payroll, Revenue, Direct Purchases, OPEX, BFR & Balance Sheet, Cash Flow & Valuation, Assumptions
-- 📈 **Rich visualizations** — KPI cards, waterfall charts, and detailed tables
-- 📄 **Branded PDF export** — Cover page with project name, fiscal year range, generation date, and summary KPIs. Pick which sections to include.
-- 🌓 **Light / dark theme**
+-  **10 themed tabs** — Overview, P&L, CAPEX, Payroll, Revenue, Direct Purchases, OPEX, BFR & Balance Sheet, Cash Flow & Valuation, Assumptions
+-  **Rich visualizations** — KPI cards, waterfall charts, and detailed tables
+-  **Branded PDF export** — Cover page with project name, fiscal year range, generation date, and summary KPIs. Pick which sections to include.
+-  **Light / dark theme**
 - 🇫🇷 French UI with DZD (Algerian Dinar) currency formatting
-- 🔒 Files are parsed entirely in your browser — nothing leaves your device
+-  Files are parsed entirely in your browser — nothing leaves your device
 
 ## Tech Stack
 
@@ -25,8 +25,6 @@ Upload an Excel business plan (`.xlsx`) and instantly explore it as an interacti
 npm install
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000), upload your BP `.xlsx`, and explore.
 
 ## Project Structure
 
