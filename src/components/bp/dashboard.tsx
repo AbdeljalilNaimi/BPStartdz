@@ -41,6 +41,8 @@ const SECTIONS: { key: string; label: string; render: (bp: ParsedBP) => React.Re
 export function Dashboard({ bp, onReset }: Props) {
   const [dark, setDark] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(() => SECTIONS.map(s => s.key));
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
