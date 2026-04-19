@@ -205,29 +205,38 @@ function parseChargesExternes(g: Grid): ChargesExternes {
 }
 
 function parseAchatsDirects(g: Grid): AchatsDirects {
-  // Generic scan: rows ~10..40, col 1 = label, cols 2..7 = FY23..FY28.
-  // Skip header rows ("Désignation", "FY", "Année"...) and the total row (captured separately).
-  const items: ChargeItem[] = [];
+  // Same product-block layout as A.2, but starting at row 6 (no top "Chiffre d'affaires" header).
+  // Block step = 9 rows. Sous-Total at base+6. Cols: 5..16 mois, 17 = N-1/FY23, 18..22 = FY24..FY28.
+  const products = parseProductBlocks(g, 6, 9);
+  const items: ChargeItem[] = products.map(p => ({ label: p.name, values: p.yearly }));
+  // Try to detect a TOTAL row after the last block
   let totals: Num[] = [null, null, null, null, null, null];
-  const isHeaderLike = (str: string): boolean => {
-    const low = str.toLowerCase();
-    return /^(désignation|designation|fy\d|année|annee|libellé|libelle|n°|categorie|catégorie)/.test(low);
-  };
-  for (let r = 8; r < Math.min(g.length, 50); r++) {
+  for (let r = 6 + products.length * 9; r < Math.min(g.length, 6 + 30 * 9 + 5); r++) {
     const rr = row(g, r);
-    const label = s(rr[1]);
-    if (!label) continue;
-    if (isHeaderLike(label)) continue;
-    const values = range(g, r, 2, 7);
-    const hasAnyNum = values.some(v => typeof v === 'number');
-    if (!hasAnyNum && label.length < 3) continue;
-    if (/^total/i.test(label)) {
-      totals = values;
-      continue;
+    if (typeof rr[1] === 'string' && /total/i.test(rr[1])) {
+      totals = [n(rr[17]), ...range(g, r, 18, 22)];
+      break;
     }
-    items.push({ label, values });
   }
   return { items, totals };
+}
+
+function parseProductBlocks(g: Grid, startRow: number, step: number): Product[] {
+  const products: Product[] = [];
+  for (let i = 0; i < 30; i++) {
+    const baseRow = startRow + i * step;
+    if (baseRow >= g.length) break;
+    const headerRow = row(g, baseRow);
+    const name = s(headerRow[0]); // col 0 = name
+    if (!name || /^total/i.test(name)) continue;
+    const designation = s(headerRow[2]); // col 2 = designation value
+    const subTotalRow = baseRow + 6;
+    const monthly = range(g, subTotalRow, 5, 16); // Mois01..Mois12
+    const yearly: Num[] = [n(row(g, subTotalRow)[17])]; // FY23 col 17
+    yearly.push(...range(g, subTotalRow, 18, 22)); // FY24..FY28
+    products.push({ name, designation, monthly, yearly });
+  }
+  return products;
 }
 
 function parseBfr(g: Grid): BfrDetail {
@@ -246,22 +255,9 @@ function parseBfr(g: Grid): BfrDetail {
 }
 
 function parseCa(g: Grid): Product[] {
-  const products: Product[] = [];
-  // Products start at row 12, repeat every 7 rows. Sous-Total at +6.
-  for (let i = 0; i < 30; i++) {
-    const baseRow = 12 + i * 7;
-    if (baseRow >= g.length) break;
-    const headerRow = row(g, baseRow);
-    const name = s(headerRow[1]);
-    const designation = s(headerRow[2]);
-    if (!name) continue;
-    const subTotalRow = baseRow + 6;
-    const monthly = range(g, subTotalRow, 6, 17); // Mois01..Mois12
-    const yearly: Num[] = [n(row(g, subTotalRow)[18])]; // FY23 col 18
-    yearly.push(...range(g, subTotalRow, 19, 23)); // FY24..FY28
-    products.push({ name, designation, monthly, yearly });
-  }
-  return products;
+  // Products start at row 12, repeat every 9 rows. Sous-Total at +6.
+  // Cols: 0=name, 5..16=Mois01..12, 17=FY23 (N-1), 18..22=FY24..FY28.
+  return parseProductBlocks(g, 12, 9);
 }
 
 function parseHypotheses(g: Grid): Hypotheses {
