@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, AreaChart, Area, BarChart,
+  CartesianGrid, Tooltip, Legend, AreaChart, Area,
 } from 'recharts';
 import type { ParsedBP } from '@/lib/bp-types';
 import { FY_LABELS_6, FY_LABELS_5 } from '@/lib/bp-types';
-import { dzd, pct, isNum } from '@/lib/bp-format';
+import { dzd, pct, isNum, isAllZero } from '@/lib/bp-format';
 import { Waterfall, buildWaterfall } from '../charts/waterfall';
 import { EmptyState } from '../empty-state';
 import { PALETTE } from '../charts/chart-theme';
@@ -69,19 +69,26 @@ export function OverviewTab({ bp }: { bp: ParsedBP }) {
       ])
     : [];
 
-  const cashFlowData = tft
+  // Per-year cash flow waterfall: Exploitation → Investissement → Financement → Net Cash Flow
+  const cashFlowWaterfalls = tft
     ? FY_LABELS_5.map((y, i) => ({
         year: y,
-        Exploitation: tft.fluxExploitation[i] ?? 0,
-        Investissement: tft.fluxInvestissement[i] ?? 0,
-        Financement: tft.fluxFinancement[i] ?? 0,
-        'Net Cash Flow': tft.netCashFlow[i] ?? 0,
+        steps: buildWaterfall([
+          { label: 'Exploitation', value: tft.fluxExploitation[i] },
+          { label: 'Investissement', value: tft.fluxInvestissement[i] },
+          { label: 'Financement', value: tft.fluxFinancement[i] },
+          { label: 'Net Cash Flow', value: tft.netCashFlow[i], isTotal: true },
+        ]),
       }))
     : [];
 
   const soldeData = tft
     ? FY_LABELS_5.map((y, i) => ({ year: y, solde: tft.soldeFinal[i] ?? 0 }))
     : [];
+
+  const pnlAllZero = pnl ? isAllZero([...pnl.ca, ...pnl.ebitda, ...pnl.resultatNet]) : true;
+  const soldeAllZero = tft ? isAllZero(tft.soldeFinal) : true;
+  const cfAllZero = tft ? isAllZero([...tft.fluxExploitation, ...tft.fluxInvestissement, ...tft.fluxFinancement]) : true;
 
   return (
     <div className="space-y-6">
