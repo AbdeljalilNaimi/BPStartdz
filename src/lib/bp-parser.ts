@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import type {
   ParsedBP, PnL, TFT, ActifBfr, Bilan, SyntheseFin,
   Investissement, Materiel, MasseSalariale, Poste,
-  ChargesExternes, BfrDetail, Product, Hypotheses, Num,
+  ChargesExternes, AchatsDirects, ChargeItem, BfrDetail, Product, Hypotheses, Num,
 } from './bp-types';
 import { FY_LABELS_6 } from './bp-types';
 
@@ -204,6 +204,32 @@ function parseChargesExternes(g: Grid): ChargesExternes {
   return { items, totals };
 }
 
+function parseAchatsDirects(g: Grid): AchatsDirects {
+  // Generic scan: rows ~10..40, col 1 = label, cols 2..7 = FY23..FY28.
+  // Skip header rows ("Désignation", "FY", "Année"...) and the total row (captured separately).
+  const items: ChargeItem[] = [];
+  let totals: Num[] = [null, null, null, null, null, null];
+  const isHeaderLike = (str: string): boolean => {
+    const low = str.toLowerCase();
+    return /^(désignation|designation|fy\d|année|annee|libellé|libelle|n°|categorie|catégorie)/.test(low);
+  };
+  for (let r = 8; r < Math.min(g.length, 50); r++) {
+    const rr = row(g, r);
+    const label = s(rr[1]);
+    if (!label) continue;
+    if (isHeaderLike(label)) continue;
+    const values = range(g, r, 2, 7);
+    const hasAnyNum = values.some(v => typeof v === 'number');
+    if (!hasAnyNum && label.length < 3) continue;
+    if (/^total/i.test(label)) {
+      totals = values;
+      continue;
+    }
+    items.push({ label, values });
+  }
+  return { items, totals };
+}
+
 function parseBfr(g: Grid): BfrDetail {
   return {
     caDso: range(g, 10, 4, 8),
@@ -292,6 +318,7 @@ export async function parseBPFile(file: File): Promise<ParsedBP> {
     ca: tryParse("A.2. Chiffre d'Affaires", parseCa),
     masseSalariale: tryParse('A.4. Masse Salariale', parseMasseSalariale),
     chargesExternes: tryParse('A.5. Charges  externes', parseChargesExternes),
+    achatsDirects: tryParse('A.3. Achats directs', parseAchatsDirects),
     bfr: tryParse('A.6. BFR', parseBfr),
     hypotheses: tryParse('Hypothèses de base', parseHypotheses),
     warnings,

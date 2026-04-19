@@ -11,6 +11,8 @@ import { RevenueTab } from './tabs/revenue';
 import { OpexTab } from './tabs/opex';
 import { BfrBilanTab } from './tabs/bfr-bilan';
 import { CashflowTab } from './tabs/cashflow';
+import { AchatsDirectsTab } from './tabs/achats-directs';
+import { HypothesesTab } from './tabs/hypotheses';
 
 interface Props {
   bp: ParsedBP;
@@ -73,9 +75,11 @@ export function Dashboard({ bp, onReset }: Props) {
               <TabsTrigger value="capex">Investissements</TabsTrigger>
               <TabsTrigger value="payroll">Masse salariale</TabsTrigger>
               <TabsTrigger value="revenue">Chiffre d'affaires</TabsTrigger>
+              <TabsTrigger value="achats">Achats directs</TabsTrigger>
               <TabsTrigger value="opex">Charges externes</TabsTrigger>
               <TabsTrigger value="bfr">BFR &amp; Bilan</TabsTrigger>
               <TabsTrigger value="cashflow">TFT &amp; Valorisation</TabsTrigger>
+              <TabsTrigger value="hypotheses">Hypothèses</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="overview" className="mt-6"><OverviewTab bp={bp} /></TabsContent>
@@ -83,9 +87,11 @@ export function Dashboard({ bp, onReset }: Props) {
           <TabsContent value="capex" className="mt-6"><CapexTab bp={bp} /></TabsContent>
           <TabsContent value="payroll" className="mt-6"><PayrollTab bp={bp} /></TabsContent>
           <TabsContent value="revenue" className="mt-6"><RevenueTab bp={bp} /></TabsContent>
+          <TabsContent value="achats" className="mt-6"><AchatsDirectsTab bp={bp} /></TabsContent>
           <TabsContent value="opex" className="mt-6"><OpexTab bp={bp} /></TabsContent>
           <TabsContent value="bfr" className="mt-6"><BfrBilanTab bp={bp} /></TabsContent>
           <TabsContent value="cashflow" className="mt-6"><CashflowTab bp={bp} /></TabsContent>
+          <TabsContent value="hypotheses" className="mt-6"><HypothesesTab bp={bp} /></TabsContent>
         </Tabs>
       </main>
     </div>
