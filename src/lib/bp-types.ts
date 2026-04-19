@@ -123,6 +123,11 @@ export interface ChargesExternes {
   totals: Num[]; // 6 years
 }
 
+export interface AchatsDirects {
+  items: ChargeItem[]; // labeled rows, 6-year values FY23..FY28
+  totals: Num[]; // 6 years (or all-null if no total row detected)
+}
+
 export interface BfrDetail {
   caDso: Num[]; // 5 years (FY24..FY28)
   dso: Num;
@@ -168,6 +173,7 @@ export interface ParsedBP {
   ca: Product[] | null;
   masseSalariale: MasseSalariale | null;
   chargesExternes: ChargesExternes | null;
+  achatsDirects: AchatsDirects | null;
   bfr: BfrDetail | null;
   hypotheses: Hypotheses | null;
   warnings: string[]; // missing-sheet warnings
