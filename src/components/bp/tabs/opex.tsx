@@ -41,7 +41,7 @@ export function OpexTab({ bp }: { bp: ParsedBP }) {
               {ce.items.map(item => {
                 const hasValue = item.values.some(v => isNum(v) && v !== 0);
                 return (
-                  <TableRow key={item.label} className={hasValue ? '' : 'text-muted-foreground'}>
+                  <TableRow key={item.label} className={hasValue ? 'font-medium bg-accent/30' : 'text-muted-foreground'}>
                     <TableCell>{item.label}</TableCell>
                     {item.values.map((v, i) => <TableCell key={i} className="text-right tabular-nums">{dzd(v)}</TableCell>)}
                   </TableRow>
@@ -59,23 +59,27 @@ export function OpexTab({ bp }: { bp: ParsedBP }) {
       <Card>
         <CardHeader><CardTitle className="text-base">Composition des charges externes</CardTitle></CardHeader>
         <CardContent>
-          <div className="w-full h-96">
-            <ResponsiveContainer>
-              <BarChart data={stackedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickFormatter={fmtAxis} />
-                <Tooltip
-                  contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12 }}
-                  formatter={(v, n) => [dzd(v as number), n]}
-                />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                {ce.items.map((item, i) => (
-                  <Bar key={item.label} dataKey={item.label} stackId="a" fill={PALETTE[i % PALETTE.length]} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {ce.totals.every(v => !isNum(v) || v === 0) ? (
+            <EmptyState />
+          ) : (
+            <div className="w-full h-96">
+              <ResponsiveContainer>
+                <BarChart data={stackedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickFormatter={fmtAxis} />
+                  <Tooltip
+                    contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12 }}
+                    formatter={(v, n) => [dzd(v as number), n]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {ce.items.map((item, i) => (
+                    <Bar key={item.label} dataKey={item.label} stackId="a" fill={PALETTE[i % PALETTE.length]} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

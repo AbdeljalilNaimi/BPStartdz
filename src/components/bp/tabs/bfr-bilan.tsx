@@ -117,7 +117,7 @@ export function BfrBilanTab({ bp }: { bp: ParsedBP }) {
           <h2 className="text-lg font-semibold pt-4">Bilan</h2>
 
           {bilan.check.map((v, i) =>
-            isNum(v) && Math.abs(v) > 1 ? (
+            isNum(v) && Math.abs(v) > 0.5 ? (
               <Card key={i} className="border-destructive bg-destructive/5">
                 <CardContent className="py-3 flex gap-2 items-center">
                   <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -147,7 +147,7 @@ export function BfrBilanTab({ bp }: { bp: ParsedBP }) {
                   <TableRow>
                     <TableCell className="text-muted-foreground italic">Check</TableCell>
                     {bilan.check.map((v, i) => (
-                      <TableCell key={i} className={`text-right tabular-nums ${isNum(v) && Math.abs(v) > 1 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                      <TableCell key={i} className={`text-right tabular-nums ${isNum(v) && Math.abs(v) > 0.5 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                         {dzd(v)}
                       </TableCell>
                     ))}
