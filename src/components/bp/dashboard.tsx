@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Moon, Sun, FileSpreadsheet, Upload, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ParsedBP } from '@/lib/bp-types';
@@ -37,6 +41,8 @@ const SECTIONS: { key: string; label: string; render: (bp: ParsedBP) => React.Re
 export function Dashboard({ bp, onReset }: Props) {
   const [dark, setDark] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(() => SECTIONS.map(s => s.key));
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,10 +86,66 @@ export function Dashboard({ bp, onReset }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
-              {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              Exporter PDF
-            </Button>
+            <Popover open={popoverOpen} onOpenChange={(o) => !exporting && setPopoverOpen(o)}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" disabled={exporting}>
+                  {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                  Exporter PDF
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Sections à inclure</p>
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() =>
+                      setSelectedKeys(
+                        selectedKeys.length === SECTIONS.length ? [] : SECTIONS.map(s => s.key)
+                      )
+                    }
+                  >
+                    {selectedKeys.length === SECTIONS.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                  </button>
+                </div>
+                <Separator className="mb-2" />
+                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                  {SECTIONS.map(s => {
+                    const checked = selectedKeys.includes(s.key);
+                    const id = `pdf-section-${s.key}`;
+                    return (
+                      <div key={s.key} className="flex items-center gap-2">
+                        <Checkbox
+                          id={id}
+                          checked={checked}
+                          onCheckedChange={(v) =>
+                            setSelectedKeys(prev =>
+                              v ? [...prev, s.key] : prev.filter(k => k !== s.key)
+                            )
+                          }
+                        />
+                        <Label htmlFor={id} className="text-sm font-normal cursor-pointer flex-1">
+                          {s.label}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Separator className="my-2" />
+                <Button
+                  size="sm"
+                  className="w-full"
+                  disabled={selectedKeys.length === 0 || exporting}
+                  onClick={() => {
+                    setPopoverOpen(false);
+                    handleExport();
+                  }}
+                >
+                  {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                  Générer le PDF ({selectedKeys.length})
+                </Button>
+              </PopoverContent>
+            </Popover>
             <Button variant="ghost" size="icon" onClick={() => setDark(d => !d)} aria-label="Basculer thème">
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
@@ -141,7 +203,7 @@ export function Dashboard({ bp, onReset }: Props) {
               {bp.fiscalYears.join(' · ')} · Exporté le {new Date().toLocaleString('fr-FR')}
             </p>
           </div>
-          {SECTIONS.map(s => (
+          {SECTIONS.filter(s => selectedKeys.includes(s.key)).map(s => (
             <div key={s.key} data-pdf-section style={{ marginBottom: 24, background: '#ffffff' }}>
               <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, paddingBottom: 6, borderBottom: '2px solid #ddd' }}>
                 {s.label}
