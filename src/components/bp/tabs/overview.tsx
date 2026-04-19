@@ -96,7 +96,7 @@ export function OverviewTab({ bp }: { bp: ParsedBP }) {
         {kpis.map(k => <Kpi key={k.label} {...k} />)}
       </div>
 
-      {pnl ? (
+      {pnl && !pnlAllZero ? (
         <Card>
           <CardHeader><CardTitle className="text-base">Évolution P&amp;L</CardTitle></CardHeader>
           <CardContent>
@@ -125,41 +125,31 @@ export function OverviewTab({ bp }: { bp: ParsedBP }) {
       ) : <EmptyState />}
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {pnl && waterfallSteps.length > 0 && (
+        {pnl && waterfallSteps.length > 0 && !pnlAllZero && (
           <Card>
             <CardHeader><CardTitle className="text-base">Cascade des charges — Année 01</CardTitle></CardHeader>
             <CardContent><Waterfall data={waterfallSteps} height={320} /></CardContent>
           </Card>
         )}
 
-        {tft && (
+        {tft && !cfAllZero && (
           <Card>
-            <CardHeader><CardTitle className="text-base">Flux de trésorerie par année</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Cascade des flux de trésorerie par année</CardTitle></CardHeader>
             <CardContent>
-              <div className="w-full h-80">
-                <ResponsiveContainer>
-                  <BarChart data={cashFlowData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
-                    <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickFormatter={fmtAxis} />
-                    <Tooltip
-                      contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12 }}
-                      formatter={(v, n) => [dzd(v as number), n]}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="Exploitation" fill={PALETTE[0]} />
-                    <Bar dataKey="Investissement" fill={PALETTE[1]} />
-                    <Bar dataKey="Financement" fill={PALETTE[2]} />
-                    <Bar dataKey="Net Cash Flow" fill={PALETTE[3]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {cashFlowWaterfalls.map(({ year, steps }) => (
+                  <div key={year}>
+                    <p className="text-xs font-medium text-muted-foreground mb-1 text-center">{year}</p>
+                    <Waterfall data={steps} height={220} />
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {tft && (
+      {tft && !soldeAllZero && (
         <Card>
           <CardHeader><CardTitle className="text-base">Solde de trésorerie cumulé</CardTitle></CardHeader>
           <CardContent>
