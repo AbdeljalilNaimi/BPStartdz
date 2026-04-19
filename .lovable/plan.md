@@ -1,86 +1,52 @@
 
 
-## Understanding
+## Audit: spec vs current implementation
 
-You uploaded an Algerian Business Plan template (`ASF_BP_Canevas_v01_2024`) and want a full interactive financial dashboard that parses any `.xlsx` matching this exact structure and renders 8 tabs of KPIs, tables, and charts in French (DZD currency).
+I went through every requirement in your spec against the existing code. Here's what's already done vs what's missing.
 
-The current project is **AssetWise** (asset management). Building this BP dashboard alongside it would create two unrelated apps. I recommend **replacing** the current app with the BP Dashboard since they share no domain logic — but I'll confirm below.
+### ✅ Already implemented (no changes needed)
+- File upload: drag-drop + click, file name shown, loading state, graceful errors, `.xlsx` validation
+- All 12 sheet parsers with trimmed sheet-name matching (handles trailing/double spaces)
+- All 8 tabs (Overview, P&L, CAPEX, Payroll, Revenue, Opex, BFR/Bilan, TFT) with the required tables and charts
+- 6 KPI cards on Overview, P&L Waterfall, Cash Flow grouped bars, Solde area chart
+- P&L conditional colors (red/green), Tx margin distinct color, DZD/Millions toggle
+- CAPEX donut, Payroll dual-axis, Revenue stacked bar + seasonality, Opex stacked bar
+- BFR DSO/DPO/DIO cards, Bilan Check banner per FY (`⚠️ Bilan déséquilibré en FYxx`)
+- TFT table + valuation cards + NPV bar chart
+- Dark/light toggle, French throughout, DZD `1 234 567` formatting (Intl `fr-FR`), `—` for nulls
+- File metadata header (name · fiscal years · upload time · "Charger un autre fichier")
+- Per-sheet missing-sheet warnings
 
-## Tech adjustments from your spec
+### ❌ Gaps to fix
 
-- **Frontend-only parsing** with SheetJS (`xlsx` npm package). No Python/FastAPI backend — parsing in-browser is instant, private (file never leaves the device), and avoids deploy complexity. Your spec listed this as an option.
-- **Recharts** (already installed) for all charts, including a custom waterfall built from stacked bars.
-- **shadcn/ui** Card/Tabs/Table already present.
-- Default: **dashboard is public** (no login). I'll confirm below.
+1. **Overview Cash Flow chart is grouped bars, spec says waterfall.** Replace with a true cascade per year using the existing `Waterfall` component.
 
-## Architecture
+2. **Opex tab missing "highlight rows with non-zero values"** — currently dims zero rows; spec wants the inverse (highlight non-zero). Quick class swap.
 
-```text
-src/
-├── routes/index.tsx              → BP Dashboard entry (replaces current landing)
-├── lib/bp-parser.ts              → All Excel parsing (one fn per sheet)
-├── lib/bp-types.ts               → ParsedBP type
-├── lib/bp-format.ts              → DZD formatter, "—", %, M toggle
-└── components/bp/
-    ├── file-uploader.tsx         → Drag-drop + parse + error handling
-    ├── dashboard.tsx             → Tabs container + file metadata header
-    ├── empty-state.tsx
-    ├── tabs/
-    │   ├── overview.tsx          → 6 KPI cards + 4 charts
-    │   ├── pnl.tsx               → P&L table, conditional colors, DZD/M toggle
-    │   ├── capex.tsx             → Materials table + CAPEX bar + budget donut
-    │   ├── payroll.tsx           → ETP/salary table + dual-axis chart
-    │   ├── revenue.tsx           → Monthly table + stacked bar + seasonality
-    │   ├── opex.tsx              → 14-row charges table + stacked bar
-    │   ├── bfr-bilan.tsx         → DSO/DPO/DIO + BFR line + Bilan check
-    │   └── cashflow.tsx          → TFT table + valuation cards + NPV bar
-    └── charts/
-        ├── waterfall.tsx         → Reusable waterfall (stacked-bar trick)
-        └── chart-theme.ts
-```
+3. **Empty-state message doesn't match spec exactly.** Spec wants: *"Aucune donnée — veuillez charger un fichier BP complété"*. Update `empty-state.tsx`.
 
-## Parsing strategy
+4. **All-zero detection per chart isn't enforced.** When parsed values exist but are all 0 (template not filled), charts render flat. Add an `isAllZero` check before rendering each chart and show the empty state instead.
 
-One pure function `parseBPFile(file: File): Promise<ParsedBP>`:
-1. `XLSX.read(buffer, { type: 'array' })`
-2. Trim sheet names — `Object.keys(wb.Sheets).find(s => s.trim() === target)` to handle trailing/double spaces
-3. `sheet_to_json(ws, { header: 1, defval: null })` → 2D array
-4. Pull values by exact `[row][col]` indices from your spec
-5. Returns typed object with `pnl, tft, actifBfr, bilan, synthese, investissement, ca, masseSalariale, chargesExternes, bfr, hypotheses, fiscalYears, fileName, uploadedAt`
-6. Throws `BPParseError(sheetName)` on missing sheets — uploader shows banner with the sheet name
+5. **Revenue tab uses `yearly[yi+1]` for FY24..FY28.** Verify mapping: parser pushes `[FY23, FY24, FY25, FY26, FY27, FY28]` so index 1..5 is correct ✅ — no change.
 
-Tab components handle missing sub-data via warning banners + empty states (no whole-app crash).
+6. **Bilan Check threshold is `Math.abs(v) > 1`.** Spec says "≠ 0". With float rounding from Excel, `> 1` is sensible but I'll lower to `> 0.5` DZD to be stricter while avoiding floating-point noise.
 
-## Charts
+7. **Synthèse `kpiYears` is parsed but never displayed.** Optional — not required by any tab in the spec, so skip.
 
-- **Waterfall** (charges, cash flow): Recharts stacked `BarChart` with invisible "base" + visible "delta" segments per step
-- **Dual-axis** (payroll): `ComposedChart` with two `YAxis`
-- **Stacked bars / lines / areas / donut**: native Recharts
+8. **`A.3. Achats directs` and `Hypothèses` sheets are referenced in spec but no tab consumes them.** Spec doesn't define a tab for them either — leave parsed but unused (already the case). No change.
 
-## UI
+### Files to modify
 
-- French throughout, values formatted `1 234 567 DZD` (Intl.NumberFormat 'fr-FR')
-- Light/dark toggle in header (uses existing `.dark` variant)
-- Header: file name · fiscal years detected · upload time · "Charger un autre fichier"
-- Pre-upload: full-screen drop zone with structure hint
-- Empty cells → "—" in tables, skipped in charts; all-zero file → empty-state per chart
-- Bilan Check ≠ 0 → red banner `⚠️ Bilan déséquilibré en FYxx`
+- `src/components/bp/tabs/overview.tsx` — swap Cash Flow grouped bars for per-year waterfall using existing `Waterfall` component; add `isAllZero` guards on each chart
+- `src/components/bp/tabs/opex.tsx` — invert highlighting (bold non-zero rows instead of dimming zero rows); add chart all-zero guard
+- `src/components/bp/empty-state.tsx` — update message text to match spec exactly
+- `src/components/bp/tabs/bfr-bilan.tsx` — tighten Check threshold to `> 0.5`
+- `src/lib/bp-format.ts` — already has `isAllZero`, just use it
 
-## New dependency
+No new files, no new dependencies. ~5 small edits.
 
-- `xlsx` (SheetJS) — only addition
-
-## Out of scope (ask if you want)
-
-- Saving uploads to backend / multi-file history
-- Editing values in dashboard (read-only viewer)
-- Export dashboard as PDF
-- Side-by-side comparison of two BP files
-
-## Two confirmations before I build
-
-1. **Existing AssetWise app** → I'll **replace it entirely** (cleanest). Say so if you'd rather keep AssetWise at `/` and put the BP dashboard at `/bp`.
-2. **Persistence** → Default is **in-browser only** (no upload to server, no auth). Say if you want files saved per-user in Lovable Cloud instead.
-
-If both defaults are fine, just say "go" and I'll build it.
+### Out of scope (confirm if you want any)
+- Adding tabs for `A.3. Achats directs` or `Hypothèses` (spec doesn't define them)
+- Saving uploads to Lovable Cloud (you chose in-browser only)
+- PDF export of the dashboard
 
