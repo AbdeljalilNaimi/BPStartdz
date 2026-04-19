@@ -1,24 +1,29 @@
 
-## Plan: Tab selection for PDF export
+## Plan: Branded cover page for PDF export
 
-Replace the single "Exporter PDF" button with a popover that lists all 10 sections as checkboxes, lets the user pick which to include, then generates the PDF with only the selected sections.
+Replace the current minimal first-page header with a proper full-page cover that introduces the report.
+
+### What goes on the cover
+- **Title block**: "Business Plan" + filename (without `.xlsx`) as the company/project name
+- **Fiscal year range**: e.g. "Exercices FY23 — FY28"
+- **Generation date**: "Généré le 19 avril 2026 à 14:32"
+- **Summary KPI table**: 4 key metrics pulled from the parsed BP, one row per fiscal year:
+  - Chiffre d'affaires (from `pnl.ca`)
+  - EBITDA (from `pnl.ebitda`)
+  - Taux EBITDA % (from `pnl.txEbitda`)
+  - Free Cash Flow (from `tft.freeCashFlow`, FY24+ only — "—" for FY23)
+- **Footer line**: small muted text "Sections incluses : N / 10"
+
+Values formatted with the existing `bp-format` helpers (DZD short form like "1,2 Md DZD", "—" for null).
 
 ### Files to change
-
-- **`src/components/bp/dashboard.tsx`**
-  - Lift the `SECTIONS` array (already defined) and add a `selectedKeys` state initialized to all keys.
-  - Replace the `Exporter PDF` button with a `Popover` containing:
-    - A header "Sections à inclure"
-    - "Tout sélectionner / Tout désélectionner" toggle link
-    - One `Checkbox` + label per section (using existing `@/components/ui/checkbox`)
-    - A primary "Générer le PDF" button (disabled when 0 selected, shows `Loader2` while exporting)
-  - Filter `SECTIONS` by `selectedKeys` when rendering the hidden `exportRef` container, so only chosen tabs are captured.
+- **`src/components/bp/dashboard.tsx`** — replace the existing inline cover `<div data-pdf-section>` with a new `<CoverPage />` component (defined in the same file or a new file). Pass `bp` + `selectedKeys.length`. Keep it as the first `[data-pdf-section]` so the existing `exportDashboardToPDF` paginates it correctly (single A4 page, no slicing needed since content fits).
 
 ### Technical notes
-- Reuse existing `Popover`, `Checkbox`, `Label` components — no new deps.
-- Keep the existing `exportDashboardToPDF` helper unchanged (it already iterates over whatever `[data-pdf-section]` nodes exist in the container).
-- Persist selection in component state only (resets on reload — matches in-browser-only data model).
-- Cover page (file name + fiscal years) stays always-included regardless of selection.
+- Pure inline-styled JSX (no Tailwind classes that depend on dark mode) so html2canvas-pro renders it identically regardless of theme.
+- Use a simple HTML `<table>` for the KPI grid with thin borders, right-aligned numbers, and zebra rows.
+- Cover always rendered, never affected by section checkboxes.
+- Reuse `formatDzdShort` / `formatPercent` from `src/lib/bp-format.ts` (already used elsewhere).
 
 ### Out of scope
-- Reordering sections, saving preferences, per-section page breaks customization.
+- Logo upload, custom color theming, multi-language toggles.
