@@ -19,6 +19,7 @@ import { CashflowTab } from './tabs/cashflow';
 import { AchatsDirectsTab } from './tabs/achats-directs';
 import { HypothesesTab } from './tabs/hypotheses';
 import { exportDashboardToPDF } from '@/lib/bp-pdf-export';
+import { CoverPage } from './cover-page';
 
 interface Props {
   bp: ParsedBP;
@@ -197,12 +198,7 @@ export function Dashboard({ bp, onReset }: Props) {
             padding: '24px',
           }}
         >
-          <div data-pdf-section style={{ marginBottom: 16, padding: 16, background: '#ffffff' }}>
-            <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>{bp.fileName}</h1>
-            <p style={{ fontSize: 12, color: '#555', marginTop: 4 }}>
-              {bp.fiscalYears.join(' · ')} · Exporté le {new Date().toLocaleString('fr-FR')}
-            </p>
-          </div>
+          <CoverPage bp={bp} sectionsIncluded={selectedKeys.length} totalSections={SECTIONS.length} />
           {SECTIONS.filter(s => selectedKeys.includes(s.key)).map(s => (
             <div key={s.key} data-pdf-section style={{ marginBottom: 24, background: '#ffffff' }}>
               <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, paddingBottom: 6, borderBottom: '2px solid #ddd' }}>
