@@ -69,7 +69,7 @@ export function CapexTab({ bp }: { bp: ParsedBP }) {
                   <TableCell colSpan={4}>Total</TableCell>
                   {inv.totals.map((v, i) => <TableCell key={i} className="text-right tabular-nums">{dzd(v)}</TableCell>)}
                   <TableCell className="text-right tabular-nums">
-                    {dzd(inv.totals.reduce((a, v) => a + (isNum(v) ? v : 0), 0))}
+                    {dzd(inv.totals.reduce<number>((a, v) => a + (isNum(v) ? v : 0), 0))}
                   </TableCell>
                 </TableRow>
               </TableBody>

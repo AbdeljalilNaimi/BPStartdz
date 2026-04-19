@@ -25,7 +25,7 @@ export function RevenueTab({ bp }: { bp: ParsedBP }) {
   const monthlyData = products.map(p => ({
     name: p.name,
     months: p.monthly,
-    total: p.monthly.reduce((a, v) => a + (isNum(v) ? v : 0), 0),
+    total: p.monthly.reduce<number>((a, v) => a + (isNum(v) ? v : 0), 0),
   }));
 
   // Stacked bar: yearly per product (FY24..FY28 = indices 1..5)
