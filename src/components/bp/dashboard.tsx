@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Moon, Sun, FileSpreadsheet, Upload, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ParsedBP } from '@/lib/bp-types';
