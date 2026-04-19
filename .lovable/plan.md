@@ -1,116 +1,86 @@
 
 
-## Plan: Security hardening with RLS and user roles
+## Understanding
 
-### Current state
-- RLS is enabled on all 4 tables (good)
-- All policies are wide-open: `for all to authenticated using (true) with check (true)`
-- No user_roles table exists
-- No role-checking functions exist
-- AI chat edge function uses service_role_key (bypasses RLS — no changes needed there)
+You uploaded an Algerian Business Plan template (`ASF_BP_Canevas_v01_2024`) and want a full interactive financial dashboard that parses any `.xlsx` matching this exact structure and renders 8 tabs of KPIs, tables, and charts in French (DZD currency).
 
-### What this changes
+The current project is **AssetWise** (asset management). Building this BP dashboard alongside it would create two unrelated apps. I recommend **replacing** the current app with the BP Dashboard since they share no domain logic — but I'll confirm below.
 
-**1. Database migration — new tables and functions**
+## Tech adjustments from your spec
 
-Create `app_role` enum, `user_roles` table, and `has_role` security definer function:
+- **Frontend-only parsing** with SheetJS (`xlsx` npm package). No Python/FastAPI backend — parsing in-browser is instant, private (file never leaves the device), and avoids deploy complexity. Your spec listed this as an option.
+- **Recharts** (already installed) for all charts, including a custom waterfall built from stacked bars.
+- **shadcn/ui** Card/Tabs/Table already present.
+- Default: **dashboard is public** (no login). I'll confirm below.
 
-```sql
--- Role enum
-CREATE TYPE public.app_role AS ENUM ('admin', 'moderator', 'user');
+## Architecture
 
--- Roles table (NOT on profiles)
-CREATE TABLE public.user_roles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  role app_role NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE (user_id, role)
-);
-
-ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
-
--- Users can only read their own roles
-CREATE POLICY "Users can view own roles"
-  ON public.user_roles FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
-
--- Security definer function (avoids RLS recursion)
-CREATE OR REPLACE FUNCTION public.has_role(_user_id UUID, _role app_role)
-RETURNS BOOLEAN
-LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = _user_id AND role = _role
-  )
-$$;
+```text
+src/
+├── routes/index.tsx              → BP Dashboard entry (replaces current landing)
+├── lib/bp-parser.ts              → All Excel parsing (one fn per sheet)
+├── lib/bp-types.ts               → ParsedBP type
+├── lib/bp-format.ts              → DZD formatter, "—", %, M toggle
+└── components/bp/
+    ├── file-uploader.tsx         → Drag-drop + parse + error handling
+    ├── dashboard.tsx             → Tabs container + file metadata header
+    ├── empty-state.tsx
+    ├── tabs/
+    │   ├── overview.tsx          → 6 KPI cards + 4 charts
+    │   ├── pnl.tsx               → P&L table, conditional colors, DZD/M toggle
+    │   ├── capex.tsx             → Materials table + CAPEX bar + budget donut
+    │   ├── payroll.tsx           → ETP/salary table + dual-axis chart
+    │   ├── revenue.tsx           → Monthly table + stacked bar + seasonality
+    │   ├── opex.tsx              → 14-row charges table + stacked bar
+    │   ├── bfr-bilan.tsx         → DSO/DPO/DIO + BFR line + Bilan check
+    │   └── cashflow.tsx          → TFT table + valuation cards + NPV bar
+    └── charts/
+        ├── waterfall.tsx         → Reusable waterfall (stacked-bar trick)
+        └── chart-theme.ts
 ```
 
-**2. Database migration — replace existing RLS policies**
+## Parsing strategy
 
-Drop the 4 catch-all policies and replace with granular per-operation policies:
+One pure function `parseBPFile(file: File): Promise<ParsedBP>`:
+1. `XLSX.read(buffer, { type: 'array' })`
+2. Trim sheet names — `Object.keys(wb.Sheets).find(s => s.trim() === target)` to handle trailing/double spaces
+3. `sheet_to_json(ws, { header: 1, defval: null })` → 2D array
+4. Pull values by exact `[row][col]` indices from your spec
+5. Returns typed object with `pnl, tft, actifBfr, bilan, synthese, investissement, ca, masseSalariale, chargesExternes, bfr, hypotheses, fiscalYears, fileName, uploadedAt`
+6. Throws `BPParseError(sheetName)` on missing sheets — uploader shows banner with the sheet name
 
-For **asset_categories**, **employees**, **assets**, **asset_assignments**:
-- `SELECT` — all authenticated users (internal staff all need read access)
-- `INSERT` — all authenticated users (staff create assets/employees)
-- `UPDATE` — all authenticated users OR restrict to admins (for categories/sensitive ops)
-- `DELETE` — admin only via `has_role(auth.uid(), 'admin')`
+Tab components handle missing sub-data via warning banners + empty states (no whole-app crash).
 
-Specific policies:
+## Charts
 
-| Table | SELECT | INSERT | UPDATE | DELETE |
-|---|---|---|---|---|
-| asset_categories | authenticated | authenticated | authenticated | admin only |
-| employees | authenticated | authenticated | authenticated | admin only |
-| assets | authenticated | authenticated (with `created_by = auth.uid()` check) | authenticated | admin only |
-| asset_assignments | authenticated | authenticated | authenticated | admin only |
+- **Waterfall** (charges, cash flow): Recharts stacked `BarChart` with invisible "base" + visible "delta" segments per step
+- **Dual-axis** (payroll): `ComposedChart` with two `YAxis`
+- **Stacked bars / lines / areas / donut**: native Recharts
 
-The `assets` INSERT policy adds `WITH CHECK (created_by = auth.uid())` to ensure users can't spoof the creator.
+## UI
 
-**3. Auto-assign 'user' role on signup**
+- French throughout, values formatted `1 234 567 DZD` (Intl.NumberFormat 'fr-FR')
+- Light/dark toggle in header (uses existing `.dark` variant)
+- Header: file name · fiscal years detected · upload time · "Charger un autre fichier"
+- Pre-upload: full-screen drop zone with structure hint
+- Empty cells → "—" in tables, skipped in charts; all-zero file → empty-state per chart
+- Bilan Check ≠ 0 → red banner `⚠️ Bilan déséquilibré en FYxx`
 
-Create a trigger function that assigns the default `'user'` role when a new user signs up:
+## New dependency
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user_role()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'user');
-  RETURN NEW;
-END;
-$$;
+- `xlsx` (SheetJS) — only addition
 
-CREATE TRIGGER on_auth_user_created_role
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_role();
-```
+## Out of scope (ask if you want)
 
-**4. Seed existing users with roles**
+- Saving uploads to backend / multi-file history
+- Editing values in dashboard (read-only viewer)
+- Export dashboard as PDF
+- Side-by-side comparison of two BP files
 
-Use the insert tool to give all existing users the `'user'` role, and optionally promote one to `'admin'`.
+## Two confirmations before I build
 
-**5. Add role-check hook (`src/lib/hooks.ts`)**
+1. **Existing AssetWise app** → I'll **replace it entirely** (cleanest). Say so if you'd rather keep AssetWise at `/` and put the BP dashboard at `/bp`.
+2. **Persistence** → Default is **in-browser only** (no upload to server, no auth). Say if you want files saved per-user in Lovable Cloud instead.
 
-Add a `useUserRole` query hook so the UI can check the current user's role for conditional rendering (e.g., hide delete buttons for non-admins). This is for UX only — the real enforcement is RLS.
-
-**6. No changes to AI chat**
-
-The edge function uses `SUPABASE_SERVICE_ROLE_KEY` which bypasses RLS entirely. No modifications needed.
-
-### Files changed
-
-| File | Action |
-|---|---|
-| Migration SQL | Create — roles table, has_role function, replace RLS policies, trigger |
-| `src/lib/hooks.ts` | Edit — add `useUserRole` hook |
-
-### What stays the same
-- All existing CRUD operations continue working for authenticated users
-- AI chat edge function untouched
-- No component changes needed (delete restrictions will surface as toast errors from RLS denials)
+If both defaults are fine, just say "go" and I'll build it.
 
