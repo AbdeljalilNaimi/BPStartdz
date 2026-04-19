@@ -1,26 +1,24 @@
 
-## Plan: PDF export of the dashboard
+## Plan: Tab selection for PDF export
 
-Add a "Exporter PDF" button in the dashboard header that captures the current view (all visible tabs' content rendered sequentially) as a multi-page A4 PDF.
-
-### Approach
-Use `html2canvas-pro` + `jspdf` (client-side, works in browser, no server needed). On click:
-1. Temporarily render all 10 tab panels stacked (not just the active one) into a hidden export container.
-2. For each tab section, snapshot with `html2canvas-pro` at 2x scale.
-3. Slice each canvas into A4-sized pages and append to a `jsPDF` doc.
-4. Save as `<fileName>-dashboard.pdf`.
+Replace the single "Exporter PDF" button with a popover that lists all 10 sections as checkboxes, lets the user pick which to include, then generates the PDF with only the selected sections.
 
 ### Files to change
-- **`package.json`** — add `jspdf` and `html2canvas-pro` (pro fork supports `oklch` colors used by Tailwind v4).
-- **`src/lib/bp-pdf-export.ts`** (new) — `exportDashboardToPDF(bp, fileName)` orchestration: renders an off-screen React tree of all tabs via `createRoot`, waits for charts to settle (Recharts needs a tick + ResizeObserver flush), captures, paginates, saves.
-- **`src/components/bp/dashboard.tsx`** — add `Download` icon button next to the theme toggle; manages `isExporting` loading state; calls the export helper passing the `bp` and a ref to a hidden container that renders all tabs sequentially with section headings (Vue d'ensemble, P&L, etc.).
+
+- **`src/components/bp/dashboard.tsx`**
+  - Lift the `SECTIONS` array (already defined) and add a `selectedKeys` state initialized to all keys.
+  - Replace the `Exporter PDF` button with a `Popover` containing:
+    - A header "Sections à inclure"
+    - "Tout sélectionner / Tout désélectionner" toggle link
+    - One `Checkbox` + label per section (using existing `@/components/ui/checkbox`)
+    - A primary "Générer le PDF" button (disabled when 0 selected, shows `Loader2` while exporting)
+  - Filter `SECTIONS` by `selectedKeys` when rendering the hidden `exportRef` container, so only chosen tabs are captured.
 
 ### Technical notes
-- Render export container with `position: fixed; left: -10000px; width: 1100px` so layout matches desktop and Recharts has a real width to measure.
-- Force light theme + white background during export for print legibility regardless of dark mode.
-- Wait ~600ms after mount + `requestAnimationFrame` x2 before snapshot so Recharts animations finish.
-- Page-slice algorithm: render full canvas, then for each A4 page draw a clipped portion (`addImage` with negative Y offset).
-- Button shows `Loader2` spinner + disabled state during export; toast on success/error via existing `sonner`.
+- Reuse existing `Popover`, `Checkbox`, `Label` components — no new deps.
+- Keep the existing `exportDashboardToPDF` helper unchanged (it already iterates over whatever `[data-pdf-section]` nodes exist in the container).
+- Persist selection in component state only (resets on reload — matches in-browser-only data model).
+- Cover page (file name + fiscal years) stays always-included regardless of selection.
 
 ### Out of scope
-- Server-side PDF rendering, custom cover page, watermarks, or per-tab export selection.
+- Reordering sections, saving preferences, per-section page breaks customization.
