@@ -56,12 +56,17 @@ export function Dashboard({ bp, onReset }: Props) {
   });
 
   const handleExport = async () => {
-    if (!exportRef.current || exporting) return;
+    if (exporting) return;
     setExporting(true);
     const wasDark = document.documentElement.classList.contains('dark');
     if (wasDark) document.documentElement.classList.remove('dark');
     try {
       toast.loading('Génération du PDF en cours…', { id: 'pdf-export' });
+      // Wait for the hidden export container to mount (it renders only when `exporting` is true)
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      if (!exportRef.current) {
+        throw new Error("Conteneur d'export introuvable");
+      }
       await exportDashboardToPDF(exportRef.current, bp.fileName);
       toast.success('PDF exporté avec succès', { id: 'pdf-export' });
     } catch (err) {
