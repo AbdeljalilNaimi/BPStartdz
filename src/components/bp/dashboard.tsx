@@ -86,10 +86,66 @@ export function Dashboard({ bp, onReset }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
-              {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              Exporter PDF
-            </Button>
+            <Popover open={popoverOpen} onOpenChange={(o) => !exporting && setPopoverOpen(o)}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" disabled={exporting}>
+                  {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                  Exporter PDF
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Sections à inclure</p>
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() =>
+                      setSelectedKeys(
+                        selectedKeys.length === SECTIONS.length ? [] : SECTIONS.map(s => s.key)
+                      )
+                    }
+                  >
+                    {selectedKeys.length === SECTIONS.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                  </button>
+                </div>
+                <Separator className="mb-2" />
+                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                  {SECTIONS.map(s => {
+                    const checked = selectedKeys.includes(s.key);
+                    const id = `pdf-section-${s.key}`;
+                    return (
+                      <div key={s.key} className="flex items-center gap-2">
+                        <Checkbox
+                          id={id}
+                          checked={checked}
+                          onCheckedChange={(v) =>
+                            setSelectedKeys(prev =>
+                              v ? [...prev, s.key] : prev.filter(k => k !== s.key)
+                            )
+                          }
+                        />
+                        <Label htmlFor={id} className="text-sm font-normal cursor-pointer flex-1">
+                          {s.label}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Separator className="my-2" />
+                <Button
+                  size="sm"
+                  className="w-full"
+                  disabled={selectedKeys.length === 0 || exporting}
+                  onClick={() => {
+                    setPopoverOpen(false);
+                    handleExport();
+                  }}
+                >
+                  {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                  Générer le PDF ({selectedKeys.length})
+                </Button>
+              </PopoverContent>
+            </Popover>
             <Button variant="ghost" size="icon" onClick={() => setDark(d => !d)} aria-label="Basculer thème">
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
