@@ -1,29 +1,27 @@
 
-## Plan: Branded cover page for PDF export
 
-Replace the current minimal first-page header with a proper full-page cover that introduces the report.
+## Plan: fix build error and prep app for launch
 
-### What goes on the cover
-- **Title block**: "Business Plan" + filename (without `.xlsx`) as the company/project name
-- **Fiscal year range**: e.g. "Exercices FY23 — FY28"
-- **Generation date**: "Généré le 19 avril 2026 à 14:32"
-- **Summary KPI table**: 4 key metrics pulled from the parsed BP, one row per fiscal year:
-  - Chiffre d'affaires (from `pnl.ca`)
-  - EBITDA (from `pnl.ebitda`)
-  - Taux EBITDA % (from `pnl.txEbitda`)
-  - Free Cash Flow (from `tft.freeCashFlow`, FY24+ only — "—" for FY23)
-- **Footer line**: small muted text "Sections incluses : N / 10"
+### The bug
+`src/routes/__root.tsx` has meta description strings broken across two lines (lines 37-38, 41-42, 43-44). JS string literals can't span raw newlines, which is why the build fails with `Unterminated string constant (37:38)`.
 
-Values formatted with the existing `bp-format` helpers (DZD short form like "1,2 Md DZD", "—" for null).
+### Changes
 
-### Files to change
-- **`src/components/bp/dashboard.tsx`** — replace the existing inline cover `<div data-pdf-section>` with a new `<CoverPage />` component (defined in the same file or a new file). Pass `bp` + `selectedKeys.length`. Keep it as the first `[data-pdf-section]` so the existing `exportDashboardToPDF` paginates it correctly (single A4 page, no slicing needed since content fits).
+**1. Fix `src/routes/__root.tsx` (unblocks the build)**
+- Collapse each multi-line description into a single line with `" — "` between the title and tagline:
+  - `"Business Plan Dashboard — Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export."`
+- Apply to `description`, `og:description`, and `twitter:description`.
 
-### Technical notes
-- Pure inline-styled JSX (no Tailwind classes that depend on dark mode) so html2canvas-pro renders it identically regardless of theme.
-- Use a simple HTML `<table>` for the KPI grid with thin borders, right-aligned numbers, and zebra rows.
-- Cover always rendered, never affected by section checkboxes.
-- Reuse `formatDzdShort` / `formatPercent` from `src/lib/bp-format.ts` (already used elsewhere).
+**2. Launch-prep polish (same file)**
+- Set a proper site title: `"Business Plan Dashboard"` instead of the generic `"Tableau de bord"` for `title`, `og:title`, and `twitter:title`.
+- Replace the stale `og:image` / `twitter:image` (it points to an unrelated "AssetWise" social image) — remove them for now since we have no project-specific share image. Per the TanStack Start guidance, no image is better than a wrong one at the root level.
+
+**3. Launch checklist (no code, just confirmation)**
+- Confirm the preview reloads cleanly after the fix (build passes, route renders).
+- Remind the user that to go live they click **Publish** (top-right), which creates the `.lovable.app` URL; a custom domain can be added after the first publish via Project Settings → Domains.
+- Frontend changes require clicking **Update** in the publish dialog to redeploy; backend (edge functions / migrations) deploys automatically.
 
 ### Out of scope
-- Logo upload, custom color theming, multi-language toggles.
+- Adding a custom social share image (can be generated later once branding assets exist).
+- SEO/meta per-route (the app is a single-route dashboard, so root meta is sufficient).
+
