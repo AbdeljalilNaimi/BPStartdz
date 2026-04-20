@@ -41,6 +41,8 @@ export const Route = createRootRoute({
       { name: "twitter:description", content: "Business Plan Dashboard — Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d281c517-0d2f-4357-a258-9a22a0888195/id-preview-02de4c58--554702b7-a648-49fd-a36a-cbde00c52f9b.lovable.app-1776639516458.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d281c517-0d2f-4357-a258-9a22a0888195/id-preview-02de4c58--554702b7-a648-49fd-a36a-cbde00c52f9b.lovable.app-1776639516458.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
