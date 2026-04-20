@@ -33,17 +33,12 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Tableau de bord" },
-      { name: "description", content: "Business Plan Dashboard
-Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
-      { property: "og:title", content: "Tableau de bord" },
-      { name: "twitter:title", content: "Tableau de bord" },
-      { property: "og:description", content: "Business Plan Dashboard
-Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
-      { name: "twitter:description", content: "Business Plan Dashboard
-Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KoUaltGzqoVfSfQv3CIsHyhMxAp2/social-images/social-1774646906152-AssetWise-Insights-Lovable-03-27-2026_05_28_PM.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KoUaltGzqoVfSfQv3CIsHyhMxAp2/social-images/social-1774646906152-AssetWise-Insights-Lovable-03-27-2026_05_28_PM.webp" },
+      { title: "Business Plan Dashboard" },
+      { name: "description", content: "Business Plan Dashboard — Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
+      { property: "og:title", content: "Business Plan Dashboard" },
+      { name: "twitter:title", content: "Business Plan Dashboard" },
+      { property: "og:description", content: "Business Plan Dashboard — Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
+      { name: "twitter:description", content: "Business Plan Dashboard — Upload an Excel business plan (.xlsx) and instantly explore it as an interactive multi-tab dashboard with branded PDF export." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
