@@ -9,38 +9,158 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlanRouteImport } from './routes/plan'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlanMasseSalarialeRouteImport } from './routes/plan.masse-salariale'
+import { Route as PlanInvestissementRouteImport } from './routes/plan.investissement'
+import { Route as PlanIdentificationRouteImport } from './routes/plan.identification'
+import { Route as PlanHypothesesRouteImport } from './routes/plan.hypotheses'
+import { Route as PlanEtatsFinanciersRouteImport } from './routes/plan.etats-financiers'
+import { Route as PlanChiffreAffairesRouteImport } from './routes/plan.chiffre-affaires'
+import { Route as PlanChargesExternesRouteImport } from './routes/plan.charges-externes'
+import { Route as PlanAchatsRouteImport } from './routes/plan.achats'
 
+const PlanRoute = PlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlanMasseSalarialeRoute = PlanMasseSalarialeRouteImport.update({
+  id: '/masse-salariale',
+  path: '/masse-salariale',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanInvestissementRoute = PlanInvestissementRouteImport.update({
+  id: '/investissement',
+  path: '/investissement',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanIdentificationRoute = PlanIdentificationRouteImport.update({
+  id: '/identification',
+  path: '/identification',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanHypothesesRoute = PlanHypothesesRouteImport.update({
+  id: '/hypotheses',
+  path: '/hypotheses',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanEtatsFinanciersRoute = PlanEtatsFinanciersRouteImport.update({
+  id: '/etats-financiers',
+  path: '/etats-financiers',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanChiffreAffairesRoute = PlanChiffreAffairesRouteImport.update({
+  id: '/chiffre-affaires',
+  path: '/chiffre-affaires',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanChargesExternesRoute = PlanChargesExternesRouteImport.update({
+  id: '/charges-externes',
+  path: '/charges-externes',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanAchatsRoute = PlanAchatsRouteImport.update({
+  id: '/achats',
+  path: '/achats',
+  getParentRoute: () => PlanRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/plan': typeof PlanRouteWithChildren
+  '/plan/achats': typeof PlanAchatsRoute
+  '/plan/charges-externes': typeof PlanChargesExternesRoute
+  '/plan/chiffre-affaires': typeof PlanChiffreAffairesRoute
+  '/plan/etats-financiers': typeof PlanEtatsFinanciersRoute
+  '/plan/hypotheses': typeof PlanHypothesesRoute
+  '/plan/identification': typeof PlanIdentificationRoute
+  '/plan/investissement': typeof PlanInvestissementRoute
+  '/plan/masse-salariale': typeof PlanMasseSalarialeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/plan': typeof PlanRouteWithChildren
+  '/plan/achats': typeof PlanAchatsRoute
+  '/plan/charges-externes': typeof PlanChargesExternesRoute
+  '/plan/chiffre-affaires': typeof PlanChiffreAffairesRoute
+  '/plan/etats-financiers': typeof PlanEtatsFinanciersRoute
+  '/plan/hypotheses': typeof PlanHypothesesRoute
+  '/plan/identification': typeof PlanIdentificationRoute
+  '/plan/investissement': typeof PlanInvestissementRoute
+  '/plan/masse-salariale': typeof PlanMasseSalarialeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/plan': typeof PlanRouteWithChildren
+  '/plan/achats': typeof PlanAchatsRoute
+  '/plan/charges-externes': typeof PlanChargesExternesRoute
+  '/plan/chiffre-affaires': typeof PlanChiffreAffairesRoute
+  '/plan/etats-financiers': typeof PlanEtatsFinanciersRoute
+  '/plan/hypotheses': typeof PlanHypothesesRoute
+  '/plan/identification': typeof PlanIdentificationRoute
+  '/plan/investissement': typeof PlanInvestissementRoute
+  '/plan/masse-salariale': typeof PlanMasseSalarialeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/plan'
+    | '/plan/achats'
+    | '/plan/charges-externes'
+    | '/plan/chiffre-affaires'
+    | '/plan/etats-financiers'
+    | '/plan/hypotheses'
+    | '/plan/identification'
+    | '/plan/investissement'
+    | '/plan/masse-salariale'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/plan'
+    | '/plan/achats'
+    | '/plan/charges-externes'
+    | '/plan/chiffre-affaires'
+    | '/plan/etats-financiers'
+    | '/plan/hypotheses'
+    | '/plan/identification'
+    | '/plan/investissement'
+    | '/plan/masse-salariale'
+  id:
+    | '__root__'
+    | '/'
+    | '/plan'
+    | '/plan/achats'
+    | '/plan/charges-externes'
+    | '/plan/chiffre-affaires'
+    | '/plan/etats-financiers'
+    | '/plan/hypotheses'
+    | '/plan/identification'
+    | '/plan/investissement'
+    | '/plan/masse-salariale'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PlanRoute: typeof PlanRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/plan': {
+      id: '/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof PlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +168,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plan/masse-salariale': {
+      id: '/plan/masse-salariale'
+      path: '/masse-salariale'
+      fullPath: '/plan/masse-salariale'
+      preLoaderRoute: typeof PlanMasseSalarialeRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/investissement': {
+      id: '/plan/investissement'
+      path: '/investissement'
+      fullPath: '/plan/investissement'
+      preLoaderRoute: typeof PlanInvestissementRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/identification': {
+      id: '/plan/identification'
+      path: '/identification'
+      fullPath: '/plan/identification'
+      preLoaderRoute: typeof PlanIdentificationRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/hypotheses': {
+      id: '/plan/hypotheses'
+      path: '/hypotheses'
+      fullPath: '/plan/hypotheses'
+      preLoaderRoute: typeof PlanHypothesesRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/etats-financiers': {
+      id: '/plan/etats-financiers'
+      path: '/etats-financiers'
+      fullPath: '/plan/etats-financiers'
+      preLoaderRoute: typeof PlanEtatsFinanciersRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/chiffre-affaires': {
+      id: '/plan/chiffre-affaires'
+      path: '/chiffre-affaires'
+      fullPath: '/plan/chiffre-affaires'
+      preLoaderRoute: typeof PlanChiffreAffairesRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/charges-externes': {
+      id: '/plan/charges-externes'
+      path: '/charges-externes'
+      fullPath: '/plan/charges-externes'
+      preLoaderRoute: typeof PlanChargesExternesRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/achats': {
+      id: '/plan/achats'
+      path: '/achats'
+      fullPath: '/plan/achats'
+      preLoaderRoute: typeof PlanAchatsRouteImport
+      parentRoute: typeof PlanRoute
+    }
   }
 }
 
+interface PlanRouteChildren {
+  PlanAchatsRoute: typeof PlanAchatsRoute
+  PlanChargesExternesRoute: typeof PlanChargesExternesRoute
+  PlanChiffreAffairesRoute: typeof PlanChiffreAffairesRoute
+  PlanEtatsFinanciersRoute: typeof PlanEtatsFinanciersRoute
+  PlanHypothesesRoute: typeof PlanHypothesesRoute
+  PlanIdentificationRoute: typeof PlanIdentificationRoute
+  PlanInvestissementRoute: typeof PlanInvestissementRoute
+  PlanMasseSalarialeRoute: typeof PlanMasseSalarialeRoute
+}
+
+const PlanRouteChildren: PlanRouteChildren = {
+  PlanAchatsRoute: PlanAchatsRoute,
+  PlanChargesExternesRoute: PlanChargesExternesRoute,
+  PlanChiffreAffairesRoute: PlanChiffreAffairesRoute,
+  PlanEtatsFinanciersRoute: PlanEtatsFinanciersRoute,
+  PlanHypothesesRoute: PlanHypothesesRoute,
+  PlanIdentificationRoute: PlanIdentificationRoute,
+  PlanInvestissementRoute: PlanInvestissementRoute,
+  PlanMasseSalarialeRoute: PlanMasseSalarialeRoute,
+}
+
+const PlanRouteWithChildren = PlanRoute._addFileChildren(PlanRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PlanRoute: PlanRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
