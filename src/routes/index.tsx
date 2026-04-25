@@ -51,12 +51,7 @@ function LandingPage() {
       <header className="border-b border-border/60 bg-card/40 backdrop-blur">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-6">
           {/* Left: brand text */}
-          <div className="flex items-center gap-3 min-w-0">
-            <img
-              src={logoStartDz}
-              alt="Start'Dz"
-              className="h-12 w-auto object-contain shrink-0"
-            />
+          <div className="flex items-center min-w-0">
             <div className="min-w-0 leading-tight">
               <p className="text-xl sm:text-2xl font-bold tracking-tight">BPstartdz</p>
               <p className="text-xs sm:text-sm text-muted-foreground">
@@ -66,20 +61,32 @@ function LandingPage() {
             </div>
           </div>
 
-          {/* Right: partner logos */}
-          <div className="hidden sm:flex items-center gap-4 shrink-0">
-            <img
-              src={logoUdl}
-              alt="Université Djilali Liabes"
-              className="h-11 w-auto object-contain"
-              title="Université Djilali Liabes — Sidi Bel Abbès"
-            />
-            <img
-              src={logoNccfiue}
-              alt="NCCFIUE"
-              className="h-11 w-auto object-contain"
-              title="National Coordination Committee for Innovation"
-            />
+          {/* Right: partner logos (UDL + NCCFIUE + Start'Dz) */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <div className="flex items-center justify-center h-14 w-14 rounded-lg bg-card border border-border/60 shadow-sm p-1.5">
+              <img
+                src={logoUdl}
+                alt="Université Djilali Liabes"
+                className="h-full w-full object-contain"
+                title="Université Djilali Liabes — Sidi Bel Abbès"
+              />
+            </div>
+            <div className="flex items-center justify-center h-14 w-14 rounded-lg bg-card border border-border/60 shadow-sm p-1.5">
+              <img
+                src={logoNccfiue}
+                alt="NCCFIUE"
+                className="h-full w-full object-contain"
+                title="National Coordination Committee for Innovation"
+              />
+            </div>
+            <div className="flex items-center justify-center h-14 w-14 rounded-lg bg-primary/5 border border-primary/30 shadow-sm p-1.5">
+              <img
+                src={logoStartDz}
+                alt="Start'Dz"
+                className="h-full w-full object-contain"
+                title="Start'Dz"
+              />
+            </div>
           </div>
         </div>
       </header>
