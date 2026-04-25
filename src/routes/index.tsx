@@ -192,9 +192,9 @@ function LandingPage() {
           <p>Année de référence par défaut : 2026 · Devise : DZD</p>
           <div className="flex items-center gap-4 opacity-80">
             <span className="text-[10px] uppercase tracking-wider">En partenariat avec</span>
-            <img src={logoStartDz} alt="Start'Dz" className="h-9 w-auto object-contain" />
-            <img src={logoUdl} alt="Université Djilali Liabes" className="h-9 w-auto object-contain" />
-            <img src={logoNccfiue} alt="NCCFIUE" className="h-9 w-auto object-contain" />
+            <img src={logoStartDz} alt="Start'Dz" width={82} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
+            <img src={logoUdl} alt="Université Djilali Liabes" width={22} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
+            <img src={logoNccfiue} alt="NCCFIUE" width={36} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
           </div>
         </div>
       </footer>
