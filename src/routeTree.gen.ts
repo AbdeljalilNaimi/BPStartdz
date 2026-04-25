@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlanIdentificationRouteImport } from './routes/plan.identification'
+import { Route as PlanHypothesesRouteImport } from './routes/plan.hypotheses'
 
 const PlanRoute = PlanRouteImport.update({
   id: '/plan',
@@ -22,31 +24,47 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlanIdentificationRoute = PlanIdentificationRouteImport.update({
+  id: '/identification',
+  path: '/identification',
+  getParentRoute: () => PlanRoute,
+} as any)
+const PlanHypothesesRoute = PlanHypothesesRouteImport.update({
+  id: '/hypotheses',
+  path: '/hypotheses',
+  getParentRoute: () => PlanRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/plan': typeof PlanRoute
+  '/plan': typeof PlanRouteWithChildren
+  '/plan/hypotheses': typeof PlanHypothesesRoute
+  '/plan/identification': typeof PlanIdentificationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/plan': typeof PlanRoute
+  '/plan': typeof PlanRouteWithChildren
+  '/plan/hypotheses': typeof PlanHypothesesRoute
+  '/plan/identification': typeof PlanIdentificationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/plan': typeof PlanRoute
+  '/plan': typeof PlanRouteWithChildren
+  '/plan/hypotheses': typeof PlanHypothesesRoute
+  '/plan/identification': typeof PlanIdentificationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/plan'
+  fullPaths: '/' | '/plan' | '/plan/hypotheses' | '/plan/identification'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/plan'
-  id: '__root__' | '/' | '/plan'
+  to: '/' | '/plan' | '/plan/hypotheses' | '/plan/identification'
+  id: '__root__' | '/' | '/plan' | '/plan/hypotheses' | '/plan/identification'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PlanRoute: typeof PlanRoute
+  PlanRoute: typeof PlanRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +83,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plan/identification': {
+      id: '/plan/identification'
+      path: '/identification'
+      fullPath: '/plan/identification'
+      preLoaderRoute: typeof PlanIdentificationRouteImport
+      parentRoute: typeof PlanRoute
+    }
+    '/plan/hypotheses': {
+      id: '/plan/hypotheses'
+      path: '/hypotheses'
+      fullPath: '/plan/hypotheses'
+      preLoaderRoute: typeof PlanHypothesesRouteImport
+      parentRoute: typeof PlanRoute
+    }
   }
 }
 
+interface PlanRouteChildren {
+  PlanHypothesesRoute: typeof PlanHypothesesRoute
+  PlanIdentificationRoute: typeof PlanIdentificationRoute
+}
+
+const PlanRouteChildren: PlanRouteChildren = {
+  PlanHypothesesRoute: PlanHypothesesRoute,
+  PlanIdentificationRoute: PlanIdentificationRoute,
+}
+
+const PlanRouteWithChildren = PlanRoute._addFileChildren(PlanRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PlanRoute: PlanRoute,
+  PlanRoute: PlanRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
