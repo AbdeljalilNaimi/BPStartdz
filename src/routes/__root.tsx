@@ -48,13 +48,6 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: appCss },
-      // Load Google Fonts non-blocking: preload then swap to stylesheet on load
-      {
-        rel: "preload",
-        as: "style",
-        href: "https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap",
-        onLoad: "this.onload=null;this.rel='stylesheet'",
-      },
     ],
   }),
   shellComponent: RootShell,
@@ -62,16 +55,24 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundComponent,
 });
 
+const FONTS_HREF =
+  "https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap";
+
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        {/* Non-blocking Google Fonts: preload then promote to stylesheet */}
+        <link
+          rel="preload"
+          as="style"
+          href={FONTS_HREF}
+          // @ts-expect-error native onload string used to swap rel without blocking render
+          onload="this.onload=null;this.rel='stylesheet'"
+        />
         <noscript>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap"
-          />
+          <link rel="stylesheet" href={FONTS_HREF} />
         </noscript>
       </head>
       <body>
