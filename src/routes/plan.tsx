@@ -190,7 +190,9 @@ function PlanLayout() {
         </header>
 
         <main className="flex-1 px-4 sm:px-6 py-6 min-w-0 w-full">
-          <Outlet />
+          <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-1 duration-150">
+            <Outlet />
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>
