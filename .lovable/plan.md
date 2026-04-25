@@ -1,154 +1,104 @@
-## Goal
+## Plan : sidebar rétractable, branding institutionnel et export PDF premium
 
-Transform the current "upload-only Excel dashboard" into a **guided financial planning platform**. The user picks one of two paths on first load, fills minimal inputs, and the app derives every financial statement, KPI, and chart in real time — mirroring the formulas in the ASF BP Canevas Excel model. Year labels start at **2026 / FY26**. Currency stays **DZD**. Plans are saved in **localStorage**.
+### 1. Assets & branding
 
----
+- Copier les 3 logos uploadés dans `src/assets/` :
+  - `start-dz-logo.png` (logo principal Start'Dz)
+  - `udl-logo.png` (Université Djilali Liabes)
+  - `nccfiue-logo.png` (Comité National)
+- Créer `src/components/brand/brand-header.tsx` : composant réutilisable affichant le logo Start'Dz + bloc texte 3 lignes :
+  - **BPstartdz** (gros, gras)
+  - *University Djilali Liabes Sidi Bel Abbes* (petit, muted)
+  - *Modèle Financier* (petit, muted, italique)
+- Variantes : `compact` (sidebar header), `full` (page d'accueil), `pdf` (page de couverture).
 
-## User flow
+### 2. Sidebar rétractable (`src/routes/plan.tsx`)
 
-```text
-                      ┌─────────────────────────────┐
-                      │   /  Landing — choose path  │
-                      └──────────────┬──────────────┘
-                  ┌──────────────────┴──────────────────┐
-                  ▼                                     ▼
-       Upload .xlsx → parse → seed             Create from scratch
-                  └──────────────────┬──────────────────┘
-                                     ▼
-                  /plan/identification  (Step 1: project info)
-                                     ▼
-                  /plan/hypotheses     (base assumptions, year start = 2026)
-                                     ▼
-                  /plan/investissement /chiffre-affaires
-                       /achats /masse-salariale /charges-externes /bfr
-                                     ▼
-                  /plan/etats-financiers (P&L, TFT, BFR, Bilan, Synthèse — read-only, computed)
-                                     ▼
-                  Export PDF (existing flow, retargeted at computed model)
-```
+Refactoriser le layout pour utiliser le composant shadcn `Sidebar` existant (`@/components/ui/sidebar`) :
 
-A persistent left/top **stepper** shows progress. User can jump to any completed step. Auto-save on every change.
+- Wrapper l'app dans `<SidebarProvider defaultOpen>` avec largeur CSS variable.
+- Remplacer la `<aside>` desktop actuelle par `<Sidebar collapsible="icon">` :
+  - `SidebarHeader` → `<BrandHeader variant="compact" />`
+  - `SidebarContent` → groupes (Informations / Données / Résultats) avec `SidebarMenuButton` (icône Lucide par étape : `IdCard`, `Settings2`, `Building2`, `TrendingUp`, `ShoppingCart`, `Users`, `Receipt`, `BarChart3`)
+  - `SidebarFooter` → progression (X/8 étapes complétées)
+- Ajouter `<SidebarTrigger />` dans le top header pour basculer ouvert/fermé (animation fluide native shadcn ~200ms).
+- Mode replié : seules les icônes restent, tooltip Radix sur hover affichant le label complet.
+- Le contenu principal s'élargit automatiquement (gestion native de `SidebarInset`).
+- Conserver la barre horizontale mobile actuelle (déjà responsive).
 
----
+### 3. Header global
 
-## Step 1 — Identification du Projet (matches your screenshot)
+Top bar de `/plan/*` :
+- Gauche : `<SidebarTrigger />` + `<BrandHeader variant="compact" />`
+- Droite : bouton "Accueil" (icône Home)
+- Bordure + backdrop-blur conservés.
 
-Single card with grouped fields, soft borders, green/beige palette:
+Page d'accueil (`src/routes/index.tsx`) :
+- Remplacer le bloc "Plan Financier / Outil de planification académique" par `<BrandHeader variant="full" />` avec logo Start'Dz à gauche et les 3 lignes de branding.
+- Footer : ajouter discrètement les logos UDL + NCCFIUE (petits, en niveaux de gris/opacity réduite) à côté de la mention année/devise.
 
-- **Institution académique**
-  - Établissement (default `Université de Sidi Bel Abbès`)
-  - Faculté (default `Faculté des Sciences Économiques`)
-  - Département (default `Département de Gestion`)
-- **Porteur de projet** — Nom · Prénom
-- **Projet** — Intitulé du projet
-- **Année de référence** — number, default `2026`
+### 4. Export PDF professionnel
 
-All defaults pre-filled but editable. Validation via zod (max lengths, required). "Suivant →" advances to Hypothèses.
+#### Modale de sélection (nouveau composant `src/components/plan/pdf-export-dialog.tsx`)
 
----
+Dialog shadcn déclenché par "Exporter PDF" depuis `/plan/etats-financiers` :
+- Titre : "Personnaliser l'export PDF"
+- Liste de cases à cocher pour chaque section (Identification, Hypothèses, Investissements, Chiffre d'Affaires, Achats Directs, Masse Salariale, Charges Externes, BFR & Bilan, Résultats P&L, TFT & Valorisation, Vue d'ensemble)
+- Boutons "Tout sélectionner" / "Tout désélectionner"
+- Compteur dynamique : "5 sections sélectionnées · ~12 pages estimées"
+- Champ optionnel : nom du fichier
+- Bouton primaire "Générer le PDF" avec loader
 
-## Guided input sections (minimal forms, no giant grids)
+#### Refonte de `src/lib/bp-pdf-export.ts` → `src/lib/bp-pdf-export-pro.ts`
 
-Each section opens with **only what the user must fill in**. Yearly grids appear inline next to each item, not as 50-row spreadsheets. "Add item" buttons only when the user wants more rows.
+Nouveau pipeline construit avec **jsPDF natif** (déjà installé) plutôt que html2canvas seul, pour un rendu vectoriel net :
 
-| Section | What user enters | What the app computes |
-|---|---|---|
-| **Hypothèses de base** | Année début (2026), durée d'amortissement, taux change, inflation, taux IBS, taux d'actualisation, terminal growth, DSO/DPO/DIO | Year labels FY26→FY31 derived everywhere |
-| **A.1 Investissement** | Add equipment row → designation, fonctionnalité, prix unitaire, qty per year (5y) | Total CAPEX, amortissements per year (linéaire) |
-| **A.2 Chiffre d'affaires** | Add product row → name, monthly volumes Année 01, prix unitaire, evolution % per year | CA monthly + annual FY26..FY31 |
-| **A.3 Achats directs** | Per product: cost ratio or unit cost | Achats annuels |
-| **A.4 Masse salariale** | Add poste → salaire base mensuel, indemnité, ETP per year | Salaire chargé annuel × ETP per year |
-| **A.5 Charges externes** | 14 preset categories with simple yearly inputs (collapsed by default, expand to edit) | Total charges externes |
-| **A.6 BFR** | DSO / DPO / DIO (already in Hypothèses) | Clients, fournisseurs, stocks per year |
+**Page de couverture (vectorielle)** :
+- Bandeau coloré haut (primary) avec logo Start'Dz centré
+- Titre : nom du projet (gros, serif)
+- Sous-titre : "BPstartdz — University Djilali Liabes Sidi Bel Abbes — Modèle Financier"
+- Bloc identification : porteur, secteur, localisation, devise, horizon
+- Bandeau bas : date de génération + logos UDL & NCCFIUE en pied
 
-UX patterns:
-- **Accordion per section**, expanded only for the active step.
-- Each item is a **collapsed row** showing label + key total; click to expand the year grid.
-- Tooltips (`?` icon) on every financial term.
-- "Skip for now" allowed; section marked incomplete in stepper.
+**Page de résumé exécutif (auto-générée)** :
+- KPIs clés en cartes : CA total, EBE moyen, Résultat net cumulé, VAN, TRI, Cash-flow final
+- Tableau condensé P&L sur 5 ans
 
----
+**Pages de sections** :
+- Header répété sur chaque page : mini logo + "BPstartdz — [Projet]" + numéro de page (ex. "3 / 24")
+- Footer : date génération + URL/marque
+- Marges : 15mm
+- Titre de section avec accent de couleur primary
+- Contenu capturé via html2canvas pour les graphiques + tableaux (rendu identique à l'app)
+- Saut de page propre entre sections (jamais de coupure au milieu d'un bloc si évitable)
 
-## Computed financial states (Step 3 — read-only)
+**Typographie & couleurs** :
+- jsPDF avec police Helvetica par défaut + tailles cohérentes (titre 24, section 16, corps 10)
+- Couleurs extraites des tokens CSS (primary sage, accent, muted)
 
-A single `/plan/etats-financiers` route with sub-tabs reusing the existing dashboard tab components, but fed by a **new `computeBP(inputs)` selector** instead of parsed Excel data:
+**Pagination** : numérotation automatique sur toutes les pages sauf couverture.
 
-- **P&L** — CA, Achats, Marge brute, Charges externes, Salaires, EBITDA, Amortissements, EBIT, Charges fin., Résultat avant impôts, IBS, Résultat net + tx marge brute / tx EBITDA
-- **TFT** — EBITDA, var BFR, IBS, Flux exploitation, CAPEX, FCF, Charges fin., Net cash flow, Solde initial/final, FCF actualisés, Valeur terminale, NPV
-- **B.3 Actif immo & BFR** — Immobilisations nettes, Clients, Stock, Fournisseurs, BFR net
-- **B.4 Bilan** — Actif net, Capitaux propres, check (=0)
-- **C. Synthèse Financement** — KPI block (CA, EBITDA, tx EBITDA, FCF) + total Investissement, Masse salariale, Achats directs, Charges externes
+### 5. Petits ajustements UX français
 
-All charts (waterfall, line, bar) update in real time from the same computed object.
+- Vérifier que tous les libellés sont en français (déjà majoritairement le cas).
+- Ajouter tooltips français sur les icônes du sidebar replié.
+- Transitions Tailwind `transition-[width]` 200ms sur le contenu principal.
 
----
+### Fichiers créés
+- `src/assets/start-dz-logo.png` (copié depuis upload)
+- `src/assets/udl-logo.png`
+- `src/assets/nccfiue-logo.png`
+- `src/components/brand/brand-header.tsx`
+- `src/components/plan/pdf-export-dialog.tsx`
+- `src/lib/bp-pdf-export-pro.ts`
 
-## Upload path
+### Fichiers modifiés
+- `src/routes/plan.tsx` — refonte avec `Sidebar` shadcn rétractable + `SidebarTrigger`
+- `src/routes/plan.etats-financiers.tsx` — branchement de la modale d'export
+- `src/routes/index.tsx` — utilisation de `BrandHeader` + footer logos
+- `src/styles.css` — variables `--sidebar-width` (16rem) et `--sidebar-width-icon` (3.5rem)
 
-Reuse `parseBPFile` from `src/lib/bp-parser.ts`. After parsing, **map parsed values into the new `PlanInputs` shape** and drop the user into `/plan/identification` with everything pre-filled. They can review/edit each step before viewing the computed states. (User confirmed: pre-fill the guided forms, not a separate read-only mode.)
-
-Year mapping: parser currently uses `FY23..FY28`. We'll relabel based on `Hypothèses.anneeDebut` (default 2026 → `FY26..FY31`). No formula changes — only display labels move.
-
----
-
-## Technical plan
-
-**Routes (TanStack Start, file-based):**
-- `src/routes/index.tsx` — landing with two cards: *Upload Excel* / *Create custom plan*
-- `src/routes/plan.tsx` — layout route with stepper sidebar + `<Outlet />`
-- `src/routes/plan.identification.tsx`
-- `src/routes/plan.hypotheses.tsx`
-- `src/routes/plan.investissement.tsx`
-- `src/routes/plan.chiffre-affaires.tsx`
-- `src/routes/plan.achats.tsx`
-- `src/routes/plan.masse-salariale.tsx`
-- `src/routes/plan.charges-externes.tsx`
-- `src/routes/plan.bfr.tsx`
-- `src/routes/plan.etats-financiers.tsx` (sub-tabs P&L / TFT / Bilan / Synthèse)
-
-Each route file gets its own `head()` with route-specific title/description.
-
-**State management:**
-- New `src/lib/plan-store.ts` — Zustand store with persist middleware → localStorage key `bp-plan-v1`. Holds a single `PlanInputs` object + `setField`, `addItem`, `removeItem`, `loadFromParsedBP`, `reset`.
-- New `src/lib/plan-types.ts` — `PlanInputs` (identification, hypotheses, investissements[], produits[], achats[], postes[], chargesExternes, bfr).
-- New `src/lib/plan-compute.ts` — pure `computeBP(inputs): ComputedBP` that returns the same shape as `ParsedBP` so existing tab components and PDF export work unchanged.
-- New `src/lib/plan-import.ts` — `parsedBPToInputs(bp: ParsedBP): PlanInputs` to seed from upload.
-
-**Validation:** `zod` schemas per section, surfaced via `react-hook-form` (already installed via shadcn `form.tsx`). Errors inline, no toasts for field-level issues.
-
-**Design tokens (`src/styles.css`):**
-- Add a soft green/beige palette as semantic tokens (`--accent-sage`, `--surface-cream`, `--border-soft`). Keep existing dark/light scheme but tint the active scheme with these for cards, stepper, primary buttons.
-- Onest font already loaded — keep.
-
-**Components (new, under `src/components/plan/`):**
-- `landing-choice.tsx` — two big cards on `/`
-- `stepper.tsx` — vertical sidebar on desktop, top scroll-strip on mobile
-- `identification-form.tsx`, `hypotheses-form.tsx`, ...one per section
-- `dynamic-list.tsx` — generic add/remove item wrapper used by Investissement, Produits, Postes, Achats
-- `year-grid.tsx` — compact 5-column input row (FY26..FY30) with auto-fill helpers ("apply to all", "+5% YoY")
-- `computed-statements.tsx` — wraps existing tabs (`PnlTab`, `CashflowTab`, etc.) and feeds them `computeBP(inputs)`
-
-**Reuse:**
-- All existing `src/components/bp/tabs/*.tsx`, charts, PDF export, formatters in `bp-format.ts`, types in `bp-types.ts` — kept and reused unchanged for the computed-statements step.
-- Existing `FileUploader` becomes a sub-component of the landing's "Upload" card; on parse it calls `loadFromParsedBP` then navigates to `/plan/identification`.
-
-**Year-label refactor:** small change in `bp-types.ts` to derive `FY_LABELS_6 = (start) => [...]` and pass `anneeDebut` through to chart axes / table headers. Defaults to 2026.
-
-**Out of scope (this round):**
-- Authentication / multi-device sync (user chose localStorage)
-- Multi-currency (user chose DZD only)
-- Editing the computed statements directly — they remain derived, never editable
-- Mid-year scenarios / sensitivity analysis (can be added later)
-
----
-
-## Acceptance checklist
-
-- `/` shows two clean cards (Upload / Create) on the green-beige palette
-- Stepper visible on every `/plan/*` route with completion ticks
-- Identification form matches screenshot structure with the new defaults
-- All year labels start at 2026 (FY26)
-- Adding a single product + a single equipment + a single poste produces a fully populated P&L, TFT, Bilan, and KPI synthèse with sensible numbers
-- Reload preserves all inputs (localStorage)
-- Upload .xlsx still works and lands the user in the guided flow with fields pre-filled
-- PDF export still works against the computed model
+### Hors scope
+- Modification du moteur de calcul (`plan-compute.ts`).
+- Ajout de nouvelles étapes (BFR séparé, etc.).
+- Persistance multi-projets ou backend (reste localStorage).
