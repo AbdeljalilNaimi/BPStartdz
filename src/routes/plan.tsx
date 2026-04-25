@@ -29,8 +29,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { BrandHeader } from '@/components/brand/brand-header';
 import { cn } from '@/lib/utils';
+import logoStartDz from '@/assets/start-dz-logo.png';
+import logoUdl from '@/assets/udl-logo.png';
+import logoNccfiue from '@/assets/nccfiue-logo.png';
 
 export const Route = createFileRoute('/plan')({
   head: () => ({
@@ -73,11 +75,13 @@ function PlanLayout() {
     <SidebarProvider defaultOpen>
       <Sidebar collapsible="icon" className="border-r border-border/60">
         <SidebarHeader className="border-b border-border/60 p-3 group-data-[collapsible=icon]:p-2">
-          <div className="group-data-[collapsible=icon]:hidden">
-            <BrandHeader variant="compact" />
-          </div>
-          <div className="hidden group-data-[collapsible=icon]:flex justify-center">
-            <BrandHeader variant="compact" hideText />
+          <div className="flex items-center justify-center group-data-[collapsible=icon]:py-1">
+            <p className="text-xs font-bold tracking-widest text-primary group-data-[collapsible=icon]:hidden">
+              ÉTAPES
+            </p>
+            <span className="hidden group-data-[collapsible=icon]:inline text-[10px] font-bold text-primary">
+              {completedCount}/{STEPS.length}
+            </span>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -98,10 +102,15 @@ function PlanLayout() {
                           asChild
                           isActive={active}
                           tooltip={s.label}
-                          className={cn(done && !active && 'text-foreground')}
+                          className={cn(
+                            'transition-transform duration-150 ease-out',
+                            'hover:scale-[1.03] hover:translate-x-0.5',
+                            'data-[active=true]:scale-[1.04] data-[active=true]:shadow-sm',
+                            done && !active && 'text-foreground',
+                          )}
                         >
                           <Link to={s.to}>
-                            <Icon className="h-4 w-4" />
+                            <Icon className="h-4 w-4 transition-transform duration-150 group-hover/menu-item:scale-110" />
                             <span>{s.label}</span>
                             {done && !active && (
                               <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary group-data-[collapsible=icon]:hidden" />
@@ -132,29 +141,58 @@ function PlanLayout() {
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset className="bg-background">
+      <SidebarInset className="bg-background min-w-0">
         {/* Top header */}
         <header className="border-b border-border/60 bg-card/60 backdrop-blur sticky top-0 z-20">
-          <div className="px-4 py-3 flex items-center gap-3 justify-between">
+          <div className="px-3 sm:px-4 py-2.5 flex items-center gap-3 justify-between">
+            {/* Left: trigger + textual brand */}
             <div className="flex items-center gap-2 min-w-0">
               <SidebarTrigger className="shrink-0" />
-              <div className="hidden md:block min-w-0">
-                <BrandHeader variant="compact" />
+              <div className="min-w-0 leading-tight hidden sm:block">
+                <p className="text-sm font-bold tracking-tight truncate">BPstartdz</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  University Djilali Liabes · Modèle Financier
+                </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate({ to: '/' })}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
-            >
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">Accueil</span>
-            </button>
+
+            {/* Right: Accueil + partner logos + Start'Dz logo */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => navigate({ to: '/' })}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Home className="h-4 w-4" />
+                <span className="hidden md:inline">Accueil</span>
+              </button>
+              <div className="hidden md:flex items-center gap-2 pl-3 border-l border-border/60 opacity-80">
+                <img
+                  src={logoUdl}
+                  alt="Université Djilali Liabes"
+                  className="h-7 w-auto object-contain"
+                  title="Université Djilali Liabes — Sidi Bel Abbès"
+                />
+                <img
+                  src={logoNccfiue}
+                  alt="NCCFIUE"
+                  className="h-7 w-auto object-contain"
+                  title="National Coordination Committee for Innovation"
+                />
+              </div>
+              <img
+                src={logoStartDz}
+                alt="Start'Dz"
+                className="h-9 w-auto object-contain pl-2 border-l border-border/60"
+              />
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 px-4 sm:px-6 py-6 min-w-0">
-          <Outlet />
+        <main className="flex-1 px-4 sm:px-6 py-6 min-w-0 w-full">
+          <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-1 duration-150">
+            <Outlet />
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>
