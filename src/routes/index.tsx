@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, Sparkles, Upload, AlertCircle, Loader2 } from 'lucide-react';
-import { parseBPFile, BPParseError } from '@/lib/bp-parser';
+// bp-parser is heavy (xlsx) — lazy-loaded inside handleFile to keep the landing bundle small
 import { usePlanStore } from '@/lib/plan-store';
 
 import logoStartDz from '@/assets/start-dz-logo.png';
@@ -35,12 +35,15 @@ function LandingPage() {
     }
     setUploading(true);
     try {
-      const bp = await parseBPFile(file);
-      loadFromParsedBP(bp);
-      navigate({ to: '/plan/identification' });
-    } catch (e) {
-      if (e instanceof BPParseError) setError(`Feuille manquante : « ${e.sheetName} »`);
-      else setError(`Erreur de lecture : ${e instanceof Error ? e.message : String(e)}`);
+      const { parseBPFile, BPParseError } = await import('@/lib/bp-parser');
+      try {
+        const bp = await parseBPFile(file);
+        loadFromParsedBP(bp);
+        navigate({ to: '/plan/identification' });
+      } catch (e) {
+        if (e instanceof BPParseError) setError(`Feuille manquante : « ${e.sheetName} »`);
+        else setError(`Erreur de lecture : ${e instanceof Error ? e.message : String(e)}`);
+      }
     } finally {
       setUploading(false);
     }
