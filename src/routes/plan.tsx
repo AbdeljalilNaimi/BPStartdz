@@ -29,8 +29,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { BrandHeader } from '@/components/brand/brand-header';
 import { cn } from '@/lib/utils';
+import logoStartDz from '@/assets/start-dz-logo.png';
+import logoUdl from '@/assets/udl-logo.png';
+import logoNccfiue from '@/assets/nccfiue-logo.png';
 
 export const Route = createFileRoute('/plan')({
   head: () => ({
