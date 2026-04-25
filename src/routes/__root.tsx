@@ -48,7 +48,13 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: appCss },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" },
+      // Load Google Fonts non-blocking: preload then swap to stylesheet on load
+      {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap",
+        onLoad: "this.onload=null;this.rel='stylesheet'",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -61,6 +67,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap"
+          />
+        </noscript>
       </head>
       <body>
         {children}
