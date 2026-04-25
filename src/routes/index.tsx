@@ -70,6 +70,10 @@ function LandingPage() {
               <img
                 src={logoUdl}
                 alt="Université Djilali Liabes"
+                width={44}
+                height={44}
+                decoding="async"
+                fetchPriority="low"
                 className="h-full w-full object-contain"
                 title="Université Djilali Liabes — Sidi Bel Abbès"
               />
@@ -78,6 +82,10 @@ function LandingPage() {
               <img
                 src={logoNccfiue}
                 alt="NCCFIUE"
+                width={44}
+                height={44}
+                decoding="async"
+                fetchPriority="low"
                 className="h-full w-full object-contain"
                 title="National Coordination Committee for Innovation"
               />
@@ -86,6 +94,10 @@ function LandingPage() {
               <img
                 src={logoStartDz}
                 alt="Start'Dz"
+                width={44}
+                height={44}
+                decoding="async"
+                fetchPriority="low"
                 className="h-full w-full object-contain"
                 title="Start'Dz"
               />
@@ -180,9 +192,9 @@ function LandingPage() {
           <p>Année de référence par défaut : 2026 · Devise : DZD</p>
           <div className="flex items-center gap-4 opacity-80">
             <span className="text-[10px] uppercase tracking-wider">En partenariat avec</span>
-            <img src={logoStartDz} alt="Start'Dz" className="h-9 w-auto object-contain" />
-            <img src={logoUdl} alt="Université Djilali Liabes" className="h-9 w-auto object-contain" />
-            <img src={logoNccfiue} alt="NCCFIUE" className="h-9 w-auto object-contain" />
+            <img src={logoStartDz} alt="Start'Dz" width={82} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
+            <img src={logoUdl} alt="Université Djilali Liabes" width={22} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
+            <img src={logoNccfiue} alt="NCCFIUE" width={36} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
           </div>
         </div>
       </footer>
