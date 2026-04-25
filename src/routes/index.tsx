@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, Sparkles, Upload, AlertCircle, Loader2 } from 'lucide-react';
 import { parseBPFile, BPParseError } from '@/lib/bp-parser';
 import { usePlanStore } from '@/lib/plan-store';
-import { BrandHeader } from '@/components/brand/brand-header';
+
+import logoStartDz from '@/assets/start-dz-logo.png';
 import logoUdl from '@/assets/udl-logo.png';
 import logoNccfiue from '@/assets/nccfiue-logo.png';
 
@@ -48,8 +49,38 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border/60 bg-card/40 backdrop-blur">
-        <div className="container mx-auto px-6 py-4">
-          <BrandHeader variant="full" />
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-6">
+          {/* Left: brand text */}
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src={logoStartDz}
+              alt="Start'Dz"
+              className="h-12 w-auto object-contain shrink-0"
+            />
+            <div className="min-w-0 leading-tight">
+              <p className="text-xl sm:text-2xl font-bold tracking-tight">BPstartdz</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                University Djilali Liabes Sidi Bel Abbes
+              </p>
+              <p className="text-[11px] text-muted-foreground italic">Modèle Financier</p>
+            </div>
+          </div>
+
+          {/* Right: partner logos */}
+          <div className="hidden sm:flex items-center gap-4 shrink-0">
+            <img
+              src={logoUdl}
+              alt="Université Djilali Liabes"
+              className="h-11 w-auto object-contain"
+              title="Université Djilali Liabes — Sidi Bel Abbès"
+            />
+            <img
+              src={logoNccfiue}
+              alt="NCCFIUE"
+              className="h-11 w-auto object-contain"
+              title="National Coordination Committee for Innovation"
+            />
+          </div>
         </div>
       </header>
 
@@ -137,10 +168,11 @@ function LandingPage() {
       <footer className="border-t border-border/60 py-5">
         <div className="container mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>Année de référence par défaut : 2026 · Devise : DZD</p>
-          <div className="flex items-center gap-4 opacity-70">
+          <div className="flex items-center gap-4 opacity-80">
             <span className="text-[10px] uppercase tracking-wider">En partenariat avec</span>
-            <img src={logoUdl} alt="Université Djilali Liabes" className="h-9 w-auto object-contain grayscale hover:grayscale-0 transition-all" />
-            <img src={logoNccfiue} alt="NCCFIUE" className="h-9 w-auto object-contain grayscale hover:grayscale-0 transition-all" />
+            <img src={logoStartDz} alt="Start'Dz" className="h-9 w-auto object-contain" />
+            <img src={logoUdl} alt="Université Djilali Liabes" className="h-9 w-auto object-contain" />
+            <img src={logoNccfiue} alt="NCCFIUE" className="h-9 w-auto object-contain" />
           </div>
         </div>
       </footer>

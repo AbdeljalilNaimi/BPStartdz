@@ -115,38 +115,29 @@ function drawCoverPage(pdf: jsPDF, assets: BrandAssets, plan: PlanInputs, genera
 
   // Subtitle
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(11);
+  pdf.setFontSize(12);
   setColor(pdf, 'text', BRAND.white);
   pdf.text('BPstartdz', PAGE.w / 2, 42, { align: 'center' });
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(8.5);
+  pdf.setFontSize(9);
   pdf.text('University Djilali Liabes Sidi Bel Abbes — Modèle Financier', PAGE.w / 2, 48, { align: 'center' });
 
   // Document type label
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(9);
   setColor(pdf, 'text', BRAND.primary);
-  pdf.text('RAPPORT FINANCIER', PAGE.w / 2, 78, { align: 'center', charSpace: 2 });
+  pdf.text('RAPPORT FINANCIER', PAGE.w / 2, 80, { align: 'center', charSpace: 2 });
 
   // Project title
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(26);
+  pdf.setFontSize(24);
   setColor(pdf, 'text', BRAND.ink);
   const title = plan.identification.intituleProjet || 'Plan financier';
   const titleLines = pdf.splitTextToSize(title, PAGE.w - 50);
-  pdf.text(titleLines, PAGE.w / 2, 95, { align: 'center' });
-
-  // Author
-  if (plan.identification.porteurNom || plan.identification.porteurPrenom) {
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(12);
-    setColor(pdf, 'text', BRAND.muted);
-    const author = `${plan.identification.porteurPrenom} ${plan.identification.porteurNom}`.trim();
-    pdf.text(`Présenté par ${author}`, PAGE.w / 2, 115 + titleLines.length * 8, { align: 'center' });
-  }
+  pdf.text(titleLines, PAGE.w / 2, 98, { align: 'center' });
 
   // Identification block
-  const blockY = 145;
+  const blockY = 135;
   setColor(pdf, 'fill', BRAND.cream);
   pdf.roundedRect(PAGE.margin + 10, blockY, PAGE.w - PAGE.margin * 2 - 20, 70, 3, 3, 'F');
   setColor(pdf, 'draw', BRAND.border);
@@ -174,20 +165,30 @@ function drawCoverPage(pdf: jsPDF, assets: BrandAssets, plan: PlanInputs, genera
     pdf.text(valueLines[0] ?? '', PAGE.margin + 70, y);
   });
 
-  // Bottom: partner logos + date
-  const bottomY = PAGE.h - 40;
+  // Bottom: partner logos (3) + date
+  const bottomY = PAGE.h - 45;
   setColor(pdf, 'draw', BRAND.primary);
   pdf.setLineWidth(0.4);
   pdf.line(PAGE.margin + 30, bottomY - 5, PAGE.w - PAGE.margin - 30, bottomY - 5);
 
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(7.5);
+  pdf.setFontSize(8);
   setColor(pdf, 'text', BRAND.muted);
   pdf.text('EN PARTENARIAT AVEC', PAGE.w / 2, bottomY, { align: 'center', charSpace: 1.5 });
 
+  // Three logos centered: Start'Dz, UDL, NCCFIUE
+  const logoY = bottomY + 4;
+  const logoH = 14;
+  const gap = 12;
+  const widths = [16, 12, 14]; // approx widths
+  const totalW = widths.reduce((a, b) => a + b, 0) + gap * 2;
+  let x = PAGE.w / 2 - totalW / 2;
   try {
-    pdf.addImage(assets.udl, 'PNG', PAGE.w / 2 - 22, bottomY + 3, 14, 16, undefined, 'FAST');
-    pdf.addImage(assets.nccfiue, 'PNG', PAGE.w / 2 + 8, bottomY + 4, 14, 14, undefined, 'FAST');
+    pdf.addImage(assets.startDz, 'PNG', x, logoY + 1, widths[0], logoH - 2, undefined, 'FAST');
+    x += widths[0] + gap;
+    pdf.addImage(assets.udl, 'PNG', x, logoY, widths[1], logoH + 2, undefined, 'FAST');
+    x += widths[1] + gap;
+    pdf.addImage(assets.nccfiue, 'PNG', x, logoY + 1, widths[2], logoH, undefined, 'FAST');
   } catch {/* ignore */}
 
   pdf.setFontSize(8);

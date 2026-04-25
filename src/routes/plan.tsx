@@ -69,7 +69,6 @@ function PlanLayout() {
   const navigate = useNavigate();
 
   const groups = Array.from(new Set(STEPS.map((s) => s.group)));
-  const completedCount = STEPS.filter((s) => completed[s.key]).length;
 
   return (
     <SidebarProvider defaultOpen>
@@ -80,64 +79,97 @@ function PlanLayout() {
               ÉTAPES
             </p>
             <span className="hidden group-data-[collapsible=icon]:inline text-[10px] font-bold text-primary">
-              {completedCount}/{STEPS.length}
+              {STEPS.length}
             </span>
           </div>
         </SidebarHeader>
         <SidebarContent>
-          {groups.map((g) => (
-            <SidebarGroup key={g}>
-              <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider">
-                {g}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {STEPS.filter((s) => s.group === g).map((s) => {
-                    const active = location.pathname === s.to;
-                    const done = !!completed[s.key];
-                    const Icon = s.icon;
-                    return (
-                      <SidebarMenuItem key={s.key}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={active}
-                          tooltip={s.label}
-                          className={cn(
-                            'transition-transform duration-150 ease-out',
-                            'hover:scale-[1.03] hover:translate-x-0.5',
-                            'data-[active=true]:scale-[1.04] data-[active=true]:shadow-sm',
-                            done && !active && 'text-foreground',
-                          )}
-                        >
-                          <Link to={s.to}>
-                            <Icon className="h-4 w-4 transition-transform duration-150 group-hover/menu-item:scale-110" />
-                            <span>{s.label}</span>
-                            {done && !active && (
-                              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary group-data-[collapsible=icon]:hidden" />
+          {groups.map((g) => {
+            const groupSteps = STEPS.filter((s) => s.group === g);
+            return (
+              <SidebarGroup key={g}>
+                <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider">
+                  {g}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {groupSteps.map((s, idxInGroup) => {
+                      const globalIdx = STEPS.findIndex((x) => x.key === s.key);
+                      const stepNumber = globalIdx + 1;
+                      const active = location.pathname === s.to;
+                      const done = !!completed[s.key];
+                      const Icon = s.icon;
+                      const isFirstInGroup = idxInGroup === 0;
+                      const isLastInGroup = idxInGroup === groupSteps.length - 1;
+                      const isLastOverall = globalIdx === STEPS.length - 1;
+                      return (
+                        <SidebarMenuItem key={s.key}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={active}
+                            tooltip={s.label}
+                            className={cn(
+                              'relative pl-1 group-data-[collapsible=icon]:pl-2',
+                              done && !active && 'text-foreground',
                             )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
+                          >
+                            <Link to={s.to}>
+                              {/* Numbered scale on the left */}
+                              <span
+                                className={cn(
+                                  'relative flex items-center justify-center shrink-0',
+                                  'h-6 w-6 rounded-full border text-[11px] font-semibold tabular-nums',
+                                  'group-data-[collapsible=icon]:hidden',
+                                  active
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : done
+                                    ? 'bg-primary/15 text-primary border-primary/40'
+                                    : 'bg-background text-muted-foreground border-border',
+                                )}
+                              >
+                                {stepNumber}
+                                {/* connector line above */}
+                                {!isFirstInGroup && (
+                                  <span
+                                    aria-hidden
+                                    className={cn(
+                                      'absolute left-1/2 -translate-x-1/2 -top-3 h-3 w-px',
+                                      done || active ? 'bg-primary/40' : 'bg-border',
+                                    )}
+                                  />
+                                )}
+                                {/* connector line below */}
+                                {!isLastInGroup && !isLastOverall && (
+                                  <span
+                                    aria-hidden
+                                    className={cn(
+                                      'absolute left-1/2 -translate-x-1/2 -bottom-3 h-3 w-px',
+                                      done ? 'bg-primary/40' : 'bg-border',
+                                    )}
+                                  />
+                                )}
+                              </span>
+                              {/* Icon visible only when collapsed */}
+                              <Icon className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
+                              <span>{s.label}</span>
+                              {done && !active && (
+                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary group-data-[collapsible=icon]:hidden" />
+                              )}
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
         </SidebarContent>
         <SidebarFooter className="border-t border-border/60 p-3 group-data-[collapsible=icon]:hidden">
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Progression</span>
-              <span className="font-medium tabular-nums">{completedCount} / {STEPS.length}</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${(completedCount / STEPS.length) * 100}%` }}
-              />
-            </div>
-          </div>
+          <p className="text-[11px] text-muted-foreground text-center">
+            BPstartdz · Modèle Financier
+          </p>
         </SidebarFooter>
       </Sidebar>
 
@@ -190,9 +222,7 @@ function PlanLayout() {
         </header>
 
         <main className="flex-1 px-4 sm:px-6 py-6 min-w-0 w-full">
-          <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-1 duration-150">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </SidebarInset>
     </SidebarProvider>
