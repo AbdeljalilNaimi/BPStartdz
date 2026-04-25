@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, Sparkles, Upload, AlertCircle, Loader2 } from 'lucide-react';
 import { parseBPFile, BPParseError } from '@/lib/bp-parser';
 import { usePlanStore } from '@/lib/plan-store';
-import { BrandHeader } from '@/components/brand/brand-header';
+
 import logoStartDz from '@/assets/start-dz-logo.png';
 import logoUdl from '@/assets/udl-logo.png';
 import logoNccfiue from '@/assets/nccfiue-logo.png';
