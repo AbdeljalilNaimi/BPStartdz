@@ -179,5 +179,13 @@ export interface ParsedBP {
   warnings: string[]; // missing-sheet warnings
 }
 
-export const FY_LABELS_6 = ['FY23', 'FY24', 'FY25', 'FY26', 'FY27', 'FY28'];
-export const FY_LABELS_5 = ['FY24', 'FY25', 'FY26', 'FY27', 'FY28'];
+export const DEFAULT_START_YEAR = 2026;
+
+export function fyLabels(startYear: number, count: number): string[] {
+  return Array.from({ length: count }, (_, i) => `FY${String((startYear + i) % 100).padStart(2, '0')}`);
+}
+
+/** Default labels used when no explicit start year is available (FY26..FY31). */
+export const FY_LABELS_6 = fyLabels(DEFAULT_START_YEAR, 6);
+/** Default 5-year labels (FY27..FY31). */
+export const FY_LABELS_5 = fyLabels(DEFAULT_START_YEAR + 1, 5);
