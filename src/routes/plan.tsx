@@ -1,28 +1,64 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Check, Home } from 'lucide-react';
+import {
+  ArrowLeft,
+  BarChart3,
+  Building2,
+  Home,
+  IdCard,
+  Receipt,
+  Settings2,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { usePlanStore } from '@/lib/plan-store';
 import { Button } from '@/components/ui/button';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { BrandHeader } from '@/components/brand/brand-header';
 import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/plan')({
   head: () => ({
     meta: [
-      { title: 'Construire un plan financier' },
+      { title: 'Construire un plan financier — BPstartdz' },
       { name: 'description', content: 'Parcours guidé pour construire un Business Plan financier complet.' },
     ],
   }),
   component: PlanLayout,
 });
 
-export const STEPS: { key: string; to: string; label: string; group: string }[] = [
-  { key: 'identification', to: '/plan/identification', label: 'Identification du projet', group: 'Informations' },
-  { key: 'hypotheses', to: '/plan/hypotheses', label: 'Hypothèses de base', group: 'Informations' },
-  { key: 'investissement', to: '/plan/investissement', label: 'Investissements', group: 'Données opérationnelles' },
-  { key: 'chiffre-affaires', to: '/plan/chiffre-affaires', label: "Chiffre d'affaires", group: 'Données opérationnelles' },
-  { key: 'achats', to: '/plan/achats', label: 'Achats directs', group: 'Données opérationnelles' },
-  { key: 'masse-salariale', to: '/plan/masse-salariale', label: 'Masse salariale', group: 'Données opérationnelles' },
-  { key: 'charges-externes', to: '/plan/charges-externes', label: 'Charges externes', group: 'Données opérationnelles' },
-  { key: 'etats-financiers', to: '/plan/etats-financiers', label: 'États financiers', group: 'Résultats' },
+interface Step {
+  key: string;
+  to: string;
+  label: string;
+  group: string;
+  icon: LucideIcon;
+}
+
+export const STEPS: Step[] = [
+  { key: 'identification', to: '/plan/identification', label: 'Identification du projet', group: 'Informations', icon: IdCard },
+  { key: 'hypotheses', to: '/plan/hypotheses', label: 'Hypothèses de base', group: 'Informations', icon: Settings2 },
+  { key: 'investissement', to: '/plan/investissement', label: 'Investissements', group: 'Données opérationnelles', icon: Building2 },
+  { key: 'chiffre-affaires', to: '/plan/chiffre-affaires', label: "Chiffre d'affaires", group: 'Données opérationnelles', icon: TrendingUp },
+  { key: 'achats', to: '/plan/achats', label: 'Achats directs', group: 'Données opérationnelles', icon: ShoppingCart },
+  { key: 'masse-salariale', to: '/plan/masse-salariale', label: 'Masse salariale', group: 'Données opérationnelles', icon: Users },
+  { key: 'charges-externes', to: '/plan/charges-externes', label: 'Charges externes', group: 'Données opérationnelles', icon: Receipt },
+  { key: 'etats-financiers', to: '/plan/etats-financiers', label: 'États financiers', group: 'Résultats', icon: BarChart3 },
 ];
 
 function PlanLayout() {
@@ -31,94 +67,97 @@ function PlanLayout() {
   const navigate = useNavigate();
 
   const groups = Array.from(new Set(STEPS.map((s) => s.group)));
+  const completedCount = STEPS.filter((s) => completed[s.key]).length;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top bar */}
-      <header className="border-b border-border/60 bg-card/60 backdrop-blur sticky top-0 z-20">
-        <div className="container mx-auto px-4 py-3 flex items-center gap-3 justify-between">
-          <button
-            type="button"
-            onClick={() => navigate({ to: '/' })}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Home className="h-4 w-4" />
-            <span className="hidden sm:inline">Accueil</span>
-          </button>
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="text-muted-foreground">Plan financier</span>
+    <SidebarProvider defaultOpen>
+      <Sidebar collapsible="icon" className="border-r border-border/60">
+        <SidebarHeader className="border-b border-border/60 p-3 group-data-[collapsible=icon]:p-2">
+          <div className="group-data-[collapsible=icon]:hidden">
+            <BrandHeader variant="compact" />
           </div>
-          <div className="w-20" />
-        </div>
-
-        {/* Mobile horizontal stepper */}
-        <div className="lg:hidden border-t border-border/60 overflow-x-auto">
-          <div className="flex gap-1 px-2 py-2 min-w-max">
-            {STEPS.map((s, i) => {
-              const active = location.pathname === s.to;
-              const done = !!completed[s.key];
-              return (
-                <Link
-                  key={s.key}
-                  to={s.to}
-                  className={cn(
-                    'text-xs px-3 py-1.5 rounded-full whitespace-nowrap border transition-colors',
-                    active ? 'bg-primary text-primary-foreground border-primary' : done ? 'bg-accent border-border' : 'bg-card border-border text-muted-foreground'
-                  )}
-                >
-                  {i + 1}. {s.label}
-                </Link>
-              );
-            })}
+          <div className="hidden group-data-[collapsible=icon]:flex justify-center">
+            <BrandHeader variant="compact" hideText />
           </div>
-        </div>
-      </header>
-
-      <div className="flex-1 container mx-auto px-4 py-6 grid lg:grid-cols-[260px_1fr] gap-8">
-        {/* Sidebar */}
-        <aside className="hidden lg:block">
-          <nav className="sticky top-20 space-y-6">
-            {groups.map((g) => (
-              <div key={g}>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-2">{g}</p>
-                <ul className="space-y-0.5">
+        </SidebarHeader>
+        <SidebarContent>
+          {groups.map((g) => (
+            <SidebarGroup key={g}>
+              <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider">
+                {g}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
                   {STEPS.filter((s) => s.group === g).map((s) => {
                     const active = location.pathname === s.to;
                     const done = !!completed[s.key];
+                    const Icon = s.icon;
                     return (
-                      <li key={s.key}>
-                        <Link
-                          to={s.to}
-                          className={cn(
-                            'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
-                            active ? 'bg-primary text-primary-foreground' : 'hover:bg-accent text-foreground'
-                          )}
+                      <SidebarMenuItem key={s.key}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          tooltip={s.label}
+                          className={cn(done && !active && 'text-foreground')}
                         >
-                          <span
-                            className={cn(
-                              'h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0 border',
-                              active ? 'border-primary-foreground/50 bg-primary-foreground/20' : done ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-card text-muted-foreground'
+                          <Link to={s.to}>
+                            <Icon className="h-4 w-4" />
+                            <span>{s.label}</span>
+                            {done && !active && (
+                              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary group-data-[collapsible=icon]:hidden" />
                             )}
-                          >
-                            {done && !active ? <Check className="h-3 w-3" /> : <span>•</span>}
-                          </span>
-                          <span className="truncate">{s.label}</span>
-                        </Link>
-                      </li>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
                     );
                   })}
-                </ul>
-              </div>
-            ))}
-          </nav>
-        </aside>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
+        <SidebarFooter className="border-t border-border/60 p-3 group-data-[collapsible=icon]:hidden">
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Progression</span>
+              <span className="font-medium tabular-nums">{completedCount} / {STEPS.length}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${(completedCount / STEPS.length) * 100}%` }}
+              />
+            </div>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
 
-        {/* Content */}
-        <main className="min-w-0">
+      <SidebarInset className="bg-background">
+        {/* Top header */}
+        <header className="border-b border-border/60 bg-card/60 backdrop-blur sticky top-0 z-20">
+          <div className="px-4 py-3 flex items-center gap-3 justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <SidebarTrigger className="shrink-0" />
+              <div className="hidden md:block min-w-0">
+                <BrandHeader variant="compact" />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate({ to: '/' })}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Accueil</span>
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 px-4 sm:px-6 py-6 min-w-0">
           <Outlet />
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
