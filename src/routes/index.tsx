@@ -70,6 +70,10 @@ function LandingPage() {
               <img
                 src={logoUdl}
                 alt="Université Djilali Liabes"
+                width={44}
+                height={44}
+                decoding="async"
+                fetchPriority="low"
                 className="h-full w-full object-contain"
                 title="Université Djilali Liabes — Sidi Bel Abbès"
               />
@@ -78,6 +82,10 @@ function LandingPage() {
               <img
                 src={logoNccfiue}
                 alt="NCCFIUE"
+                width={44}
+                height={44}
+                decoding="async"
+                fetchPriority="low"
                 className="h-full w-full object-contain"
                 title="National Coordination Committee for Innovation"
               />
@@ -86,6 +94,10 @@ function LandingPage() {
               <img
                 src={logoStartDz}
                 alt="Start'Dz"
+                width={44}
+                height={44}
+                decoding="async"
+                fetchPriority="low"
                 className="h-full w-full object-contain"
                 title="Start'Dz"
               />
