@@ -4,6 +4,7 @@ import {
   BarChart3,
   Building2,
   Home,
+  FileText,
   IdCard,
   Receipt,
   Settings2,
@@ -60,6 +61,7 @@ export const STEPS: Step[] = [
   { key: 'achats', to: '/plan/achats', label: 'Achats directs', group: 'Données opérationnelles', icon: ShoppingCart },
   { key: 'masse-salariale', to: '/plan/masse-salariale', label: 'Masse salariale', group: 'Données opérationnelles', icon: Users },
   { key: 'charges-externes', to: '/plan/charges-externes', label: 'Charges externes', group: 'Données opérationnelles', icon: Receipt },
+  { key: 'commentaires', to: '/plan/commentaires', label: 'Commentaires ASF', group: 'Données opérationnelles', icon: FileText },
   { key: 'etats-financiers', to: '/plan/etats-financiers', label: 'États financiers', group: 'Résultats', icon: BarChart3 },
 ];
 
@@ -167,9 +169,10 @@ function PlanLayout() {
           })}
         </SidebarContent>
         <SidebarFooter className="border-t border-border/60 p-3 group-data-[collapsible=icon]:hidden">
-          <p className="text-[11px] text-muted-foreground text-center">
-            BPstartdz · Modèle Financier
-          </p>
+          <div className="text-[11px] text-muted-foreground text-center space-y-1">
+            <p>BPstartdz · Modèle Financier</p>
+            <p className="opacity-75">Developed by Naimi Abdeldjalil</p>
+          </div>
         </SidebarFooter>
       </Sidebar>
 

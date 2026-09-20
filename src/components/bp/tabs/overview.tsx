@@ -4,7 +4,7 @@ import {
   CartesianGrid, Tooltip, Legend, AreaChart, Area,
 } from 'recharts';
 import type { ParsedBP } from '@/lib/bp-types';
-import { FY_LABELS_6, FY_LABELS_5 } from '@/lib/bp-types';
+import { operatingYears } from '@/lib/bp-types';
 import { dzd, pct, isNum, isAllZero } from '@/lib/bp-format';
 import { Waterfall, buildWaterfall } from '../charts/waterfall';
 import { EmptyState } from '../empty-state';
@@ -33,9 +33,11 @@ const fmtAxis = (v: number) => {
 export function OverviewTab({ bp }: { bp: ParsedBP }) {
   const pnl = bp.pnl;
   const tft = bp.tft;
+  const fy6 = bp.fiscalYears;
+  const fy5 = operatingYears(bp.fiscalYears);
 
   const kpis = [
-    { label: 'CA Année 01 (FY24)', value: dzd(pnl?.ca[1] ?? null) },
+    { label: 'CA Année 01 (FY26)', value: dzd(pnl?.ca[1] ?? null) },
     { label: 'EBITDA Année 01', value: dzd(pnl?.ebitda[1] ?? null) },
     { label: "Tx d'EBITDA", value: pct(pnl?.txEbitda[1] ?? null) },
     { label: 'Résultat net Année 01', value: dzd(pnl?.resultatNet[1] ?? null) },
@@ -44,7 +46,7 @@ export function OverviewTab({ bp }: { bp: ParsedBP }) {
   ];
 
   const pnlChart = pnl
-    ? FY_LABELS_6.map((y, i) => ({
+    ? fy6.map((y, i) => ({
         year: y,
         CA: pnl.ca[i] ?? 0,
         'Marge brute': pnl.margeBrute[i] ?? 0,
@@ -83,7 +85,7 @@ export function OverviewTab({ bp }: { bp: ParsedBP }) {
     : [];
 
   const soldeData = tft
-    ? FY_LABELS_5.map((y, i) => ({ year: y, solde: tft.soldeFinal[i] ?? 0 }))
+    ? fy5.map((y, i) => ({ year: y, solde: tft.soldeFinal[i] ?? 0 }))
     : [];
 
   const pnlAllZero = pnl ? isAllZero([...pnl.ca, ...pnl.ebitda, ...pnl.resultatNet]) : true;

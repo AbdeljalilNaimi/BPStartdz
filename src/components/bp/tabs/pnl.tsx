@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FY_LABELS_6 } from '@/lib/bp-types';
 import type { ParsedBP, Num } from '@/lib/bp-types';
 import { dzd, pct, isNum } from '@/lib/bp-format';
 import { EmptyState } from '../empty-state';
@@ -46,7 +45,7 @@ export function PnlTab({ bp }: { bp: ParsedBP }) {
             <TableHeader>
               <TableRow>
                 <TableHead className="min-w-[200px]">Ligne</TableHead>
-                {FY_LABELS_6.map(y => <TableHead key={y} className="text-right">{y}</TableHead>)}
+                {bp.fiscalYears.map(y => <TableHead key={y} className="text-right">{y}</TableHead>)}
               </TableRow>
             </TableHeader>
             <TableBody>

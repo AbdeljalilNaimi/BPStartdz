@@ -6,14 +6,16 @@ export function FormShell({
   title,
   description,
   children,
+  wide,
 }: {
   step: number;
   title: string;
   description?: string;
   children: ReactNode;
+  wide?: boolean;
 }) {
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className={wide ? 'space-y-6 max-w-6xl' : 'space-y-6 max-w-3xl'}>
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-primary">Étape {step}</p>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">{title}</h1>

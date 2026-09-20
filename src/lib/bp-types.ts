@@ -2,7 +2,7 @@
 export type Num = number | null;
 
 export interface PnL {
-  ca: Num[]; // 6 years FY23..FY28
+  ca: Num[]; // 6 years FY25..FY30 (N-1 + A01..A05)
   achats: Num[];
   margeBrute: Num[];
   chargesExternes: Num[];
@@ -20,7 +20,7 @@ export interface PnL {
 }
 
 export interface TFT {
-  // 5 years FY24..FY28
+  // 5 years FY26..FY30 (A01..A05)
   ebitda: Num[];
   varBfr: Num[];
   bfrExploitation: Num[];
@@ -37,7 +37,7 @@ export interface TFT {
   soldeFinal: Num[];
   tauxActualisation: Num[];
   fcfActualises: Num[];
-  terminalGrowth: Num; // FY28 only
+  terminalGrowth: Num;
   valeurTerminale: Num;
   npv: Num;
 }
@@ -65,17 +65,16 @@ export interface Bilan {
   reservesLegales: Num[];
   reportsNouveau: Num[];
   capitauxPropres: Num[];
+  passifTotal: Num[];
   check: Num[];
 }
 
 export interface SyntheseFin {
-  // KPI block FY23..FY27
   kpiYears: (string | number | null)[];
   ca: Num[];
   ebitda: Num[];
   txEbitda: Num[];
   fcf: Num[];
-  // Synthèse totals (col 11)
   investissementTotal: Num;
   masseSalarialeTotal: Num;
   achatsDirectsTotal: Num;
@@ -88,7 +87,7 @@ export interface Materiel {
   designation: string | null;
   fonctionnalite: string | null;
   prixUnitaire: Num;
-  annees: Num[]; // 5
+  annees: Num[]; // 5 operating years
   total: Num;
 }
 
@@ -102,7 +101,12 @@ export interface Poste {
   poste: string | null;
   salaireBaseMensuel: Num;
   indemniteMensuelle: Num;
+  primePanierTransport: Num;
   salaireChargeAnnuel: Num;
+  salaireNetMensuel: Num;
+  irgMensuel: Num;
+  cnasSalariale: Num;
+  cnasPatronale: Num;
   etp: Num[]; // 6 (N-1, A01..A05)
   masseSalariale: Num[]; // 6
 }
@@ -115,7 +119,7 @@ export interface MasseSalariale {
 
 export interface ChargeItem {
   label: string;
-  values: Num[]; // 6 years FY23..FY28
+  values: Num[]; // 6 years FY25..FY30
 }
 
 export interface ChargesExternes {
@@ -124,12 +128,12 @@ export interface ChargesExternes {
 }
 
 export interface AchatsDirects {
-  items: ChargeItem[]; // labeled rows, 6-year values FY23..FY28
-  totals: Num[]; // 6 years (or all-null if no total row detected)
+  items: ChargeItem[];
+  totals: Num[];
 }
 
 export interface BfrDetail {
-  caDso: Num[]; // 5 years (FY24..FY28)
+  caDso: Num[]; // 5 years FY26..FY30
   dso: Num;
   clientsDzd: Num[];
   consoMatieres: Num[];
@@ -144,13 +148,13 @@ export interface BfrDetail {
 export interface Product {
   name: string;
   designation: string | null;
-  monthly: Num[]; // 12 months Année 01
-  yearly: Num[]; // FY23..FY28 (6) — index 0 = FY23
+  monthly: Num[]; // 12 months Année 01 (2026)
+  yearly: Num[]; // FY25..FY30 (6) — index 0 = N-1
 }
 
 export interface Hypotheses {
   anneeDebut: Num;
-  tauxChange: Num[]; // 6 years FY22..FY27
+  tauxChange: Num[];
   inflation: Num[];
   rampUp: Num[];
   evolutionCa: Num[];
@@ -163,7 +167,7 @@ export interface Hypotheses {
 export interface ParsedBP {
   fileName: string;
   uploadedAt: Date;
-  fiscalYears: string[]; // ["FY23", "FY24", ...]
+  fiscalYears: string[]; // ["FY25", "FY26", ..., "FY30"]
   pnl: PnL | null;
   tft: TFT | null;
   actifBfr: ActifBfr | null;
@@ -176,16 +180,33 @@ export interface ParsedBP {
   achatsDirects: AchatsDirects | null;
   bfr: BfrDetail | null;
   hypotheses: Hypotheses | null;
-  warnings: string[]; // missing-sheet warnings
+  warnings: string[];
 }
 
+/** Année 01 (N) of the official ASF horizon. */
 export const DEFAULT_START_YEAR = 2026;
+/** Historique N-1. */
+export const N_MINUS_1_YEAR = 2025;
 
 export function fyLabels(startYear: number, count: number): string[] {
   return Array.from({ length: count }, (_, i) => `FY${String((startYear + i) % 100).padStart(2, '0')}`);
 }
 
-/** Default labels used when no explicit start year is available (FY26..FY31). */
-export const FY_LABELS_6 = fyLabels(DEFAULT_START_YEAR, 6);
-/** Default 5-year labels (FY27..FY31). */
-export const FY_LABELS_5 = fyLabels(DEFAULT_START_YEAR + 1, 5);
+/** Six-year canevas labels: N-1 then A01..A05 (FY25..FY30 when start is 2026). */
+export function fyHorizonLabels(startYear: number = DEFAULT_START_YEAR): string[] {
+  return fyLabels(startYear - 1, 6);
+}
+
+/** Operating years A01..A05 (FY26..FY30). */
+export function fyOperatingLabels(startYear: number = DEFAULT_START_YEAR): string[] {
+  return fyLabels(startYear, 5);
+}
+
+export function operatingYears(fiscalYears: string[]): string[] {
+  return fiscalYears.slice(1, 6);
+}
+
+/** Default labels used when no explicit start year is available (FY25..FY30). */
+export const FY_LABELS_6 = fyHorizonLabels(DEFAULT_START_YEAR);
+/** Default 5-year operating labels (FY26..FY30). */
+export const FY_LABELS_5 = fyOperatingLabels(DEFAULT_START_YEAR);

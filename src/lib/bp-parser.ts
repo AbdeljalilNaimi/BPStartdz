@@ -55,7 +55,7 @@ function range(g: Grid, r: number, c0: number, c1: number): Num[] {
 // ---- Parsers per sheet ----
 
 function parsePnL(g: Grid): PnL {
-  // cols 2..7 => FY23..FY28
+  // cols 2..7 => FY25..FY30 (N-1 + A01..A05)
   return {
     ca: range(g, 11, 2, 7),
     achats: range(g, 12, 2, 7),
@@ -76,7 +76,7 @@ function parsePnL(g: Grid): PnL {
 }
 
 function parseTFT(g: Grid): TFT {
-  // cols 2..6 => FY24..FY28
+  // cols 2..6 => FY26..FY30 (A01..A05)
   return {
     ebitda: range(g, 11, 2, 6),
     varBfr: range(g, 12, 2, 6),
@@ -114,25 +114,34 @@ function parseActifBfr(g: Grid): ActifBfr {
 }
 
 function parseBilan(g: Grid): Bilan {
-  // headers row 3, cols 2..6 = FY24..FY28
+  // headers row 3, cols 2..6 = FY26..FY30
+  const fournisseurs = range(g, 12, 2, 6);
+  const actifNet = range(g, 13, 2, 6);
+  const capitauxPropres = range(g, 19, 2, 6);
+  const passifTotal = capitauxPropres.map((cp, i) => {
+    const a = typeof cp === 'number' ? cp : 0;
+    const f = typeof fournisseurs[i] === 'number' ? (fournisseurs[i] as number) : 0;
+    return a + f;
+  });
   return {
     immobilisations: range(g, 5, 2, 6),
     clients: range(g, 6, 2, 6),
     stock: range(g, 7, 2, 6),
     tresorerie: range(g, 10, 2, 6),
-    fournisseurs: range(g, 12, 2, 6),
-    actifNet: range(g, 13, 2, 6),
+    fournisseurs,
+    actifNet,
     capitalSocial: range(g, 15, 2, 6),
     resultatExercice: range(g, 16, 2, 6),
     reservesLegales: range(g, 17, 2, 6),
     reportsNouveau: range(g, 18, 2, 6),
-    capitauxPropres: range(g, 19, 2, 6),
+    capitauxPropres,
+    passifTotal: passifTotal as Num[],
     check: range(g, 22, 2, 6),
   };
 }
 
 function parseSynthese(g: Grid): SyntheseFin {
-  // KPI block rows 60..64, cols 4..8 = FY23..FY27
+  // KPI block rows 60..64, cols 4..8 = FY25..FY29 (Excel layout; labels remapped to 2026–2030 in the app)
   const kpiYears = (row(g, 60).slice(4, 9) as (string | number | null)[]);
   return {
     kpiYears,
@@ -179,7 +188,12 @@ function parseMasseSalariale(g: Grid): MasseSalariale {
       poste: s(rr[0]),
       salaireBaseMensuel: n(rr[2]),
       indemniteMensuelle: n(rr[3]),
+      primePanierTransport: n(rr[4]),
       salaireChargeAnnuel: n(rr[10]),
+      salaireNetMensuel: null,
+      irgMensuel: null,
+      cnasSalariale: null,
+      cnasPatronale: null,
       etp: range(g, r, 11, 16),
       masseSalariale: range(g, r, 17, 22),
     });
@@ -191,10 +205,11 @@ function parseMasseSalariale(g: Grid): MasseSalariale {
 
 function parseChargesExternes(g: Grid): ChargesExternes {
   const labels = [
-    'Sous-traitance', 'Loyers', 'Energie/eau/gaz', 'Frais Marketing',
+    'Sous-traitance', 'Loyers', 'Énergie / eau / gaz', 'Frais Marketing & Communication',
     "Honoraires d'avocat", 'Honoraires du Notaire', "Honoraires d'expert-comptable",
-    'Honoraires Commissaire aux Comptes', 'Frais du transit', 'Frais télécom',
-    'Divers fournitures', 'Frais de formation', 'R&D', 'Autre 1',
+    'Honoraires Commissaire aux Comptes (CAC)', 'Frais de transit / douane',
+    'Frais télécom & hébergement internet', 'Diverses fournitures', 'Frais de formation',
+    'Recherche & Développement (R&D)', 'Autre (charges spécifiques)',
   ];
   const items = labels.map((label, i) => {
     const r = 13 + i;
@@ -206,7 +221,7 @@ function parseChargesExternes(g: Grid): ChargesExternes {
 
 function parseAchatsDirects(g: Grid): AchatsDirects {
   // Same product-block layout as A.2, but starting at row 6 (no top "Chiffre d'affaires" header).
-  // Block step = 9 rows. Sous-Total at base+6. Cols: 5..16 mois, 17 = N-1/FY23, 18..22 = FY24..FY28.
+  // Block step = 9 rows. Sous-Total at base+6. Cols: 5..16 mois, 17 = N-1, 18..22 = A01..A05.
   const products = parseProductBlocks(g, 6, 9);
   const items: ChargeItem[] = products.map(p => ({ label: p.name, values: p.yearly }));
   // Try to detect a TOTAL row after the last block
@@ -232,8 +247,8 @@ function parseProductBlocks(g: Grid, startRow: number, step: number): Product[] 
     const designation = s(headerRow[2]); // col 2 = designation value
     const subTotalRow = baseRow + 6;
     const monthly = range(g, subTotalRow, 5, 16); // Mois01..Mois12
-    const yearly: Num[] = [n(row(g, subTotalRow)[17])]; // FY23 col 17
-    yearly.push(...range(g, subTotalRow, 18, 22)); // FY24..FY28
+    const yearly: Num[] = [n(row(g, subTotalRow)[17])]; // N-1 col 17
+    yearly.push(...range(g, subTotalRow, 18, 22)); // A01..A05
     products.push({ name, designation, monthly, yearly });
   }
   return products;
@@ -256,7 +271,7 @@ function parseBfr(g: Grid): BfrDetail {
 
 function parseCa(g: Grid): Product[] {
   // Products start at row 12, repeat every 9 rows. Sous-Total at +6.
-  // Cols: 0=name, 5..16=Mois01..12, 17=FY23 (N-1), 18..22=FY24..FY28.
+  // Cols: 0=name, 5..16=Mois01..12, 17=N-1, 18..22=A01..A05.
   return parseProductBlocks(g, 12, 9);
 }
 

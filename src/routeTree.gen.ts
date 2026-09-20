@@ -16,6 +16,7 @@ import { Route as PlanInvestissementRouteImport } from './routes/plan.investisse
 import { Route as PlanIdentificationRouteImport } from './routes/plan.identification'
 import { Route as PlanHypothesesRouteImport } from './routes/plan.hypotheses'
 import { Route as PlanEtatsFinanciersRouteImport } from './routes/plan.etats-financiers'
+import { Route as PlanCommentairesRouteImport } from './routes/plan.commentaires'
 import { Route as PlanChiffreAffairesRouteImport } from './routes/plan.chiffre-affaires'
 import { Route as PlanChargesExternesRouteImport } from './routes/plan.charges-externes'
 import { Route as PlanAchatsRouteImport } from './routes/plan.achats'
@@ -55,6 +56,11 @@ const PlanEtatsFinanciersRoute = PlanEtatsFinanciersRouteImport.update({
   path: '/etats-financiers',
   getParentRoute: () => PlanRoute,
 } as any)
+const PlanCommentairesRoute = PlanCommentairesRouteImport.update({
+  id: '/commentaires',
+  path: '/commentaires',
+  getParentRoute: () => PlanRoute,
+} as any)
 const PlanChiffreAffairesRoute = PlanChiffreAffairesRouteImport.update({
   id: '/chiffre-affaires',
   path: '/chiffre-affaires',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/plan/achats': typeof PlanAchatsRoute
   '/plan/charges-externes': typeof PlanChargesExternesRoute
   '/plan/chiffre-affaires': typeof PlanChiffreAffairesRoute
+  '/plan/commentaires': typeof PlanCommentairesRoute
   '/plan/etats-financiers': typeof PlanEtatsFinanciersRoute
   '/plan/hypotheses': typeof PlanHypothesesRoute
   '/plan/identification': typeof PlanIdentificationRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/plan/achats': typeof PlanAchatsRoute
   '/plan/charges-externes': typeof PlanChargesExternesRoute
   '/plan/chiffre-affaires': typeof PlanChiffreAffairesRoute
+  '/plan/commentaires': typeof PlanCommentairesRoute
   '/plan/etats-financiers': typeof PlanEtatsFinanciersRoute
   '/plan/hypotheses': typeof PlanHypothesesRoute
   '/plan/identification': typeof PlanIdentificationRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/plan/achats': typeof PlanAchatsRoute
   '/plan/charges-externes': typeof PlanChargesExternesRoute
   '/plan/chiffre-affaires': typeof PlanChiffreAffairesRoute
+  '/plan/commentaires': typeof PlanCommentairesRoute
   '/plan/etats-financiers': typeof PlanEtatsFinanciersRoute
   '/plan/hypotheses': typeof PlanHypothesesRoute
   '/plan/identification': typeof PlanIdentificationRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/plan/achats'
     | '/plan/charges-externes'
     | '/plan/chiffre-affaires'
+    | '/plan/commentaires'
     | '/plan/etats-financiers'
     | '/plan/hypotheses'
     | '/plan/identification'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/plan/achats'
     | '/plan/charges-externes'
     | '/plan/chiffre-affaires'
+    | '/plan/commentaires'
     | '/plan/etats-financiers'
     | '/plan/hypotheses'
     | '/plan/identification'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/plan/achats'
     | '/plan/charges-externes'
     | '/plan/chiffre-affaires'
+    | '/plan/commentaires'
     | '/plan/etats-financiers'
     | '/plan/hypotheses'
     | '/plan/identification'
@@ -203,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanEtatsFinanciersRouteImport
       parentRoute: typeof PlanRoute
     }
+    '/plan/commentaires': {
+      id: '/plan/commentaires'
+      path: '/commentaires'
+      fullPath: '/plan/commentaires'
+      preLoaderRoute: typeof PlanCommentairesRouteImport
+      parentRoute: typeof PlanRoute
+    }
     '/plan/chiffre-affaires': {
       id: '/plan/chiffre-affaires'
       path: '/chiffre-affaires'
@@ -231,6 +250,7 @@ interface PlanRouteChildren {
   PlanAchatsRoute: typeof PlanAchatsRoute
   PlanChargesExternesRoute: typeof PlanChargesExternesRoute
   PlanChiffreAffairesRoute: typeof PlanChiffreAffairesRoute
+  PlanCommentairesRoute: typeof PlanCommentairesRoute
   PlanEtatsFinanciersRoute: typeof PlanEtatsFinanciersRoute
   PlanHypothesesRoute: typeof PlanHypothesesRoute
   PlanIdentificationRoute: typeof PlanIdentificationRoute
@@ -242,6 +262,7 @@ const PlanRouteChildren: PlanRouteChildren = {
   PlanAchatsRoute: PlanAchatsRoute,
   PlanChargesExternesRoute: PlanChargesExternesRoute,
   PlanChiffreAffairesRoute: PlanChiffreAffairesRoute,
+  PlanCommentairesRoute: PlanCommentairesRoute,
   PlanEtatsFinanciersRoute: PlanEtatsFinanciersRoute,
   PlanHypothesesRoute: PlanHypothesesRoute,
   PlanIdentificationRoute: PlanIdentificationRoute,

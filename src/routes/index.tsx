@@ -189,7 +189,10 @@ function LandingPage() {
 
       <footer className="border-t border-border/60 py-5">
         <div className="container mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>Année de référence par défaut : 2026 · Devise : DZD</p>
+          <div className="space-y-1">
+            <p>Année de référence par défaut : 2026 · Devise : DZD</p>
+            <p className="opacity-75">Developed by Naimi Abdeldjalil</p>
+          </div>
           <div className="flex items-center gap-4 opacity-80">
             <span className="text-[10px] uppercase tracking-wider">En partenariat avec</span>
             <img src={logoStartDz} alt="Start'Dz" width={82} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />

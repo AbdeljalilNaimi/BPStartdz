@@ -116,7 +116,7 @@ function EtatsPage() {
       )}
 
       <div className="flex justify-between pt-6 border-t">
-        <Button variant="ghost" onClick={() => navigate({ to: '/plan/charges-externes' })}>
+        <Button variant="ghost" onClick={() => navigate({ to: '/plan/commentaires' })}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Précédent
         </Button>
       </div>

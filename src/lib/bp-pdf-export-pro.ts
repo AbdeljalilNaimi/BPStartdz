@@ -99,8 +99,10 @@ function drawFooter(pdf: jsPDF, generatedAt: string) {
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(7.5);
   setColor(pdf, 'text', BRAND.muted);
-  pdf.text(`Généré le ${generatedAt}`, PAGE.margin, PAGE.h - FOOTER_H + 5);
-  pdf.text('BPstartdz · Modèle Financier', PAGE.w - PAGE.margin, PAGE.h - FOOTER_H + 5, { align: 'right' });
+  pdf.text(`Généré le ${generatedAt}`, PAGE.margin, PAGE.h - FOOTER_H + 4);
+  pdf.text('BPstartdz · Modèle Financier', PAGE.w - PAGE.margin, PAGE.h - FOOTER_H + 4, { align: 'right' });
+  pdf.setFontSize(6.5);
+  pdf.text('Developed by Naimi Abdeldjalil', PAGE.w - PAGE.margin, PAGE.h - FOOTER_H + 8, { align: 'right' });
 }
 
 function drawCoverPage(pdf: jsPDF, assets: BrandAssets, plan: PlanInputs, generatedAt: string) {

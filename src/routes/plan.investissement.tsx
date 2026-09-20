@@ -5,7 +5,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { usePlanStore } from '@/lib/plan-store';
 import { FormShell, Section } from '@/components/plan/form-shell';
 import { StepNav } from './plan';
-import { fyLabels } from '@/lib/bp-types';
+import { fyOperatingLabels } from '@/lib/bp-types';
 import { dzd } from '@/lib/bp-format';
 
 export const Route = createFileRoute('/plan/investissement')({
@@ -15,13 +15,12 @@ export const Route = createFileRoute('/plan/investissement')({
 
 function InvestissementPage() {
   const items = usePlanStore((s) => s.plan.investissements);
-  const startYear = usePlanStore((s) => s.plan.hypotheses.anneeDebut);
   const add = usePlanStore((s) => s.addInvestissement);
   const update = usePlanStore((s) => s.updateInvestissement);
   const remove = usePlanStore((s) => s.removeInvestissement);
   const markComplete = usePlanStore((s) => s.markComplete);
 
-  const labels = fyLabels(startYear, 5);
+  const labels = fyOperatingLabels();
   const totalCapex = items.reduce(
     (acc, it) => acc + it.prixUnitaire * it.quantites.reduce((a, q) => a + q, 0),
     0
@@ -31,7 +30,7 @@ function InvestissementPage() {
     <FormShell
       step={3}
       title="Investissements"
-      description="Listez les équipements et matériels nécessaires sur 5 ans. Indiquez le prix unitaire et la quantité achetée chaque année."
+      description="Listez les équipements et matériels nécessaires sur 2026–2030. Indiquez le prix unitaire et la quantité achetée chaque année."
     >
       <Section>
         {items.length === 0 ? (
@@ -62,8 +61,9 @@ function InvestissementPage() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-[1fr_repeat(5,1fr)] gap-2 items-end text-xs">
-                    <div>
+                  <div className="overflow-x-auto pb-2 -mx-2 px-2">
+                    <div className="grid grid-cols-[1fr_repeat(5,1fr)] gap-2 items-end text-xs min-w-[500px]">
+                      <div>
                       <label className="text-muted-foreground">Prix unitaire (DZD)</label>
                       <Input
                         type="number"
@@ -77,7 +77,7 @@ function InvestissementPage() {
                         <label className="text-muted-foreground">Qté {y}</label>
                         <Input
                           type="number"
-                          value={it.quantites[yi]}
+                          value={it.quantites[yi] ?? 0}
                           onChange={(e) => {
                             const next = [...it.quantites];
                             next[yi] = Number(e.target.value) || 0;
@@ -87,6 +87,7 @@ function InvestissementPage() {
                         />
                       </div>
                     ))}
+                  </div>
                   </div>
                   <p className="text-xs text-muted-foreground">Total équipement : <span className="font-medium text-foreground">{dzd(total)}</span></p>
                 </div>
@@ -98,7 +99,7 @@ function InvestissementPage() {
       </Section>
 
       <div className="flex justify-end">
-        <p className="text-sm">CAPEX total sur 5 ans : <span className="font-semibold text-primary">{dzd(totalCapex)}</span></p>
+        <p className="text-sm">CAPEX total 2026–2030 : <span className="font-semibold text-primary">{dzd(totalCapex)}</span></p>
       </div>
 
       <StepNav prev="/plan/hypotheses" next="/plan/chiffre-affaires" onNext={() => markComplete('investissement', items.length > 0)} />
